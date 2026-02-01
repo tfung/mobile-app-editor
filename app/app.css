@@ -1,3 +1,5 @@
+/* Tailwind CSS - ignore unknown at-rules */
+/* stylelint-disable at-rule-no-unknown */
 @import "tailwindcss";
 
 @theme {
