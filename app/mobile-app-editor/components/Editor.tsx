@@ -2,7 +2,7 @@ import { useFetcher } from 'react-router';
 import { useEditor } from '../context/EditorContext';
 
 export function Editor() {
-  const { config, updateTextSection, updateCTA, updateCarousel } = useEditor();
+  const { config, configId, setConfigId, updateTextSection, updateCTA, updateCarousel } = useEditor();
   const fetcher = useFetcher();
 
   const inputClasses = "w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200";
@@ -12,11 +12,19 @@ export function Editor() {
   const handleSave = () => {
     const formData = new FormData();
     formData.append('config', JSON.stringify(config));
+    if (configId) {
+      formData.append('configId', configId);
+    }
     fetcher.submit(formData, { method: 'post' });
   };
 
   const isSaving = fetcher.state === 'submitting';
-  const saveResult = fetcher.data as { success?: boolean; message?: string; error?: string } | undefined;
+  const saveResult = fetcher.data as { success?: boolean; message?: string; error?: string; configId?: string } | undefined;
+
+  // Update configId when save is successful
+  if (saveResult?.success && saveResult.configId && saveResult.configId !== configId) {
+    setConfigId(saveResult.configId);
+  }
 
   return (
     <div className="space-y-6">

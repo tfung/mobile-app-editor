@@ -1,7 +1,8 @@
 import type { Route } from "./+types/mobile-app-editor";
 import { redirect } from "react-router";
 import MobileAppEditor from "../mobile-app-editor";
-import { requirePermission, requireUser } from "../services/auth.server";
+import { requirePermission, getUser } from "../services/auth.server";
+import { getLatestConfig, createConfig, updateConfig } from "../services/config.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,15 +12,18 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ request }: Route.LoaderArgs) {
-  // Require authentication - redirect to login if not authenticated
-  try {
-    const user = await requireUser(request);
-    return { user };
-  } catch (error) {
-    // User not authenticated, redirect to login
+  // Check authentication - redirect to login if not authenticated
+  const user = await getUser(request);
+
+  if (!user) {
     const url = new URL(request.url);
     throw redirect(`/login?redirectTo=${encodeURIComponent(url.pathname)}`);
   }
+
+  // Load the latest configuration for this user
+  const latestConfig = getLatestConfig(user.id);
+
+  return { user, config: latestConfig };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -28,6 +32,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
   const configData = formData.get("config");
+  const configId = formData.get("configId");
 
   if (!configData) {
     return { success: false, error: "No configuration data provided" };
@@ -36,26 +41,32 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const config = JSON.parse(configData as string);
 
-    console.log("=== Configuration Save Request ===");
-    console.log("Timestamp:", new Date().toISOString());
-    console.log("User:", user.email, `(${user.role})`);
-    console.log("Configuration Data:", JSON.stringify(config, null, 2));
-    console.log("================================");
-
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    let savedConfig;
+    if (configId && typeof configId === "string") {
+      // Update existing configuration
+      savedConfig = updateConfig(configId, user.id, config);
+      console.log("✅ Configuration updated:", savedConfig.id);
+    } else {
+      // Create new configuration
+      savedConfig = createConfig(user.id, config);
+      console.log("✅ Configuration created:", savedConfig.id);
+    }
 
     return {
       success: true,
       message: "Configuration saved successfully!",
-      savedAt: new Date().toISOString()
+      savedAt: savedConfig.updatedAt,
+      configId: savedConfig.id,
     };
   } catch (error) {
-    console.error("Error parsing configuration:", error);
-    return { success: false, error: "Invalid configuration format" };
+    console.error("❌ Error saving configuration:", error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save configuration"
+    };
   }
 }
 
 export default function MobileAppEditorRoute({ loaderData }: Route.ComponentProps) {
-  return <MobileAppEditor user={loaderData?.user} />;
+  return <MobileAppEditor user={loaderData?.user} initialConfig={loaderData?.config} />;
 }

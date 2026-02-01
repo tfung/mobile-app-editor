@@ -2,6 +2,7 @@ import { Form } from "react-router";
 import { EditorProvider } from "./context/EditorContext";
 import { Editor } from "./components/Editor";
 import { Preview } from "./components/Preview";
+import type { ConfigResponse } from "./types";
 
 interface User {
   id: string;
@@ -11,11 +12,12 @@ interface User {
 
 interface MobileAppEditorProps {
   user?: User | null;
+  initialConfig?: ConfigResponse | null;
 }
 
-export default function MobileAppEditor({ user }: MobileAppEditorProps) {
+export default function MobileAppEditor({ user, initialConfig }: MobileAppEditorProps) {
   return (
-    <EditorProvider>
+    <EditorProvider initialConfig={initialConfig?.data} configId={initialConfig?.id}>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Header with user info */}
         {user && (
