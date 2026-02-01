@@ -25,6 +25,11 @@ const MOCK_USERS: Record<string, User> = {
     email: "editor@example.com",
     role: "editor",
   },
+  "user-3": {
+    id: "user-3",
+    email: "viewer@example.com",
+    role: "viewer",
+  },
 };
 
 /**
