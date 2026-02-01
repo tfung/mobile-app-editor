@@ -7,7 +7,6 @@ import { requireUserId, getUserId } from "./session.server";
 export interface User {
   id: string;
   email: string;
-  role: "admin" | "editor" | "viewer";
 }
 
 /**
@@ -17,18 +16,15 @@ export interface User {
 const MOCK_USERS: Record<string, User> = {
   "user-1": {
     id: "user-1",
-    email: "admin@example.com",
-    role: "admin",
+    email: "user-1@example.com",
   },
   "user-2": {
     id: "user-2",
-    email: "editor@example.com",
-    role: "editor",
+    email: "user-2@example.com",
   },
   "user-3": {
     id: "user-3",
-    email: "viewer@example.com",
-    role: "viewer",
+    email: "user-3@example.com",
   },
 };
 
@@ -81,37 +77,4 @@ export async function getUser(request: Request): Promise<User | null> {
   if (!userId) return null;
 
   return getUserById(userId);
-}
-
-/**
- * Check if user has permission
- */
-export function hasPermission(user: User, permission: string): boolean {
-  // Simple role-based permissions
-  const permissions: Record<string, string[]> = {
-    admin: ["read", "write", "delete", "manage"],
-    editor: ["read", "write"],
-    viewer: ["read"],
-  };
-
-  return permissions[user.role]?.includes(permission) || false;
-}
-
-/**
- * Require a specific permission
- */
-export async function requirePermission(
-  request: Request,
-  permission: string
-): Promise<User> {
-  const user = await requireUser(request);
-
-  if (!hasPermission(user, permission)) {
-    throw new Response("Forbidden", {
-      status: 403,
-      statusText: `You don't have permission to ${permission}`,
-    });
-  }
-
-  return user;
 }

@@ -7,7 +7,6 @@ import type { ConfigResponse } from "./types";
 interface User {
   id: string;
   email: string;
-  role: "admin" | "editor" | "viewer";
 }
 
 interface MobileAppEditorProps {
@@ -65,7 +64,6 @@ export default function MobileAppEditor({ user, initialConfig, allConfigs = [] }
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{user.email}</p>
-                    <p className="text-xs text-gray-500 capitalize">{user.role}</p>
                   </div>
                 </div>
 

@@ -1,7 +1,7 @@
 import type { Route } from "./+types/mobile-app-editor";
 import { redirect } from "react-router";
 import MobileAppEditor from "../mobile-app-editor";
-import { requirePermission, getUser } from "../services/auth.server";
+import { requireUser, getUser } from "../services/auth.server";
 import { getAllConfigs, createConfig } from "../services/config.server";
 
 export function meta({}: Route.MetaArgs) {
@@ -30,8 +30,8 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
-  // ✅ Require authentication and "write" permission
-  const user = await requirePermission(request, "write");
+  // Require authentication
+  const user = await requireUser(request);
 
   const formData = await request.formData();
   const configData = formData.get("config");
