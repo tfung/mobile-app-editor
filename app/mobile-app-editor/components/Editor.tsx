@@ -1,17 +1,44 @@
+import { useFetcher } from 'react-router';
 import { useEditor } from '../context/EditorContext';
 
 export function Editor() {
   const { config, updateTextSection, updateCTA, updateCarousel } = useEditor();
+  const fetcher = useFetcher();
 
   const inputClasses = "w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200";
   const labelClasses = "block text-sm font-medium text-gray-700 mb-2";
   const sectionClasses = "bg-white border border-gray-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200";
 
+  const handleSave = () => {
+    const formData = new FormData();
+    formData.append('config', JSON.stringify(config));
+    fetcher.submit(formData, { method: 'post' });
+  };
+
+  const isSaving = fetcher.state === 'submitting';
+  const saveResult = fetcher.data as { success?: boolean; message?: string; error?: string } | undefined;
+
   return (
     <div className="space-y-6">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-gray-900">Configuration Editor</h2>
-        <p className="text-gray-500 mt-1">Customize your mobile app home screen</p>
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900">Configuration Editor</h2>
+          <p className="text-gray-500 mt-1">Customize your mobile app home screen</p>
+        </div>
+        <div className="flex flex-col items-end gap-2">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+          >
+            {isSaving ? 'Saving...' : 'Save Configuration'}
+          </button>
+          {saveResult && (
+            <div className={`text-sm ${saveResult.success ? 'text-green-600' : 'text-red-600'}`}>
+              {saveResult.success ? saveResult.message : saveResult.error}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Carousel Section */}
