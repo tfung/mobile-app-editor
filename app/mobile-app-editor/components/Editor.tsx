@@ -93,6 +93,26 @@ export function Editor() {
     }
   };
 
+  const handleAddImage = () => {
+    const newImages = [
+      ...config.carousel.images,
+      { url: 'https://placehold.co/400x600/000000/white?text=New+Image', alt: 'New image' }
+    ];
+    updateCarousel({ images: newImages });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const newImages = config.carousel.images.filter((_, i) => i !== index);
+    updateCarousel({ images: newImages });
+  };
+
+  const handleUpdateImage = (index: number, field: 'url' | 'alt', value: string) => {
+    const newImages = config.carousel.images.map((img, i) =>
+      i === index ? { ...img, [field]: value } : img
+    );
+    updateCarousel({ images: newImages });
+  };
+
   const isSaving = fetcher.state === 'submitting';
   const saveResult = fetcher.data as { success?: boolean; message?: string; error?: string } | undefined;
 
@@ -172,6 +192,56 @@ export function Editor() {
               <option value="landscape">Landscape (16:9)</option>
               <option value="square">Square (1:1)</option>
             </select>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className={labelClasses}>Images</label>
+              <button
+                onClick={handleAddImage}
+                className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+              >
+                + Add Image
+              </button>
+            </div>
+            <div className="space-y-3">
+              {config.carousel.images.map((image, index) => (
+                <div key={index} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Image URL</label>
+                        <input
+                          type="url"
+                          value={image.url}
+                          onChange={(e) => handleUpdateImage(index, 'url', e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="https://example.com/image.jpg"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Alt Text</label>
+                        <input
+                          type="text"
+                          value={image.alt}
+                          onChange={(e) => handleUpdateImage(index, 'alt', e.target.value)}
+                          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          placeholder="Image description"
+                        />
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveImage(index)}
+                      disabled={config.carousel.images.length === 1}
+                      className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm"
+                      title={config.carousel.images.length === 1 ? "Cannot remove the last image" : "Remove image"}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
