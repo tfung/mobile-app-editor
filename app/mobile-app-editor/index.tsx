@@ -5,11 +5,11 @@ import { Preview } from "./components/Preview";
 export default function MobileAppEditor() {
   return (
     <EditorProvider>
-      <div className="min-h-screen grid grid-cols-2 gap-8 p-8">
-        <div className="overflow-y-auto">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 grid grid-cols-2 gap-12 p-8">
+        <div className="overflow-y-auto pr-4">
           <Editor />
         </div>
-        <div className="flex justify-center">
+        <div className="flex justify-center items-start">
           <Preview />
         </div>
       </div>
