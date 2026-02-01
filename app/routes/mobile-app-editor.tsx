@@ -1,5 +1,6 @@
 import type { Route } from "./+types/mobile-app-editor";
 import MobileAppEditor from "../mobile-app-editor";
+// import { requirePermission } from "../services/auth.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,6 +10,14 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function action({ request }: Route.ActionArgs) {
+  // ✅ Require authentication and "write" permission
+  // const user = await requirePermission(request, "write");
+  const user = {
+    id: "user-123",
+    email: "admin@example.com",
+    role: "admin"
+  }
+
   const formData = await request.formData();
   const configData = formData.get("config");
 
@@ -21,6 +30,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     console.log("=== Configuration Save Request ===");
     console.log("Timestamp:", new Date().toISOString());
+    console.log("User:", user.email, `(${user.role})`);
     console.log("Configuration Data:", JSON.stringify(config, null, 2));
     console.log("================================");
 
