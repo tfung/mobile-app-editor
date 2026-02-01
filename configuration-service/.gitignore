@@ -1,3 +1,17 @@
-.DS_Store
+# Dependencies
+node_modules/
+
+# Database files
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Environment variables
 .env
-/node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
