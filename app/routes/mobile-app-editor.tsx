@@ -2,7 +2,7 @@ import type { Route } from "./+types/mobile-app-editor";
 import { redirect } from "react-router";
 import MobileAppEditor from "../mobile-app-editor";
 import { requirePermission, getUser } from "../services/auth.server";
-import { getLatestConfig, createConfig, updateConfig } from "../services/config.server";
+import { getAllConfigs, createConfig } from "../services/config.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,10 +20,13 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw redirect(`/login?redirectTo=${encodeURIComponent(url.pathname)}`);
   }
 
-  // Load the latest configuration for this user
-  const latestConfig = getLatestConfig(user.id);
+  // Get all configurations for dropdown
+  const allConfigs = getAllConfigs(user.id);
 
-  return { user, config: latestConfig };
+  // Always load the latest configuration
+  const currentConfig = allConfigs.length > 0 ? allConfigs[0] : null;
+
+  return { user, config: currentConfig, allConfigs };
 }
 
 export async function action({ request }: Route.ActionArgs) {
@@ -32,7 +35,6 @@ export async function action({ request }: Route.ActionArgs) {
 
   const formData = await request.formData();
   const configData = formData.get("config");
-  const configId = formData.get("configId");
 
   if (!configData) {
     return { success: false, error: "No configuration data provided" };
@@ -41,20 +43,13 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const config = JSON.parse(configData as string);
 
-    let savedConfig;
-    if (configId && typeof configId === "string") {
-      // Update existing configuration
-      savedConfig = updateConfig(configId, user.id, config);
-      console.log("✅ Configuration updated:", savedConfig.id);
-    } else {
-      // Create new configuration
-      savedConfig = createConfig(user.id, config);
-      console.log("✅ Configuration created:", savedConfig.id);
-    }
+    // Always create a new configuration version (never update)
+    const savedConfig = createConfig(user.id, config);
+    console.log("✅ New configuration version created:", savedConfig.id);
 
     return {
       success: true,
-      message: "Configuration saved successfully!",
+      message: "New configuration version saved!",
       savedAt: savedConfig.updatedAt,
       configId: savedConfig.id,
     };
@@ -68,5 +63,5 @@ export async function action({ request }: Route.ActionArgs) {
 }
 
 export default function MobileAppEditorRoute({ loaderData }: Route.ComponentProps) {
-  return <MobileAppEditor user={loaderData?.user} initialConfig={loaderData?.config} />;
+  return <MobileAppEditor user={loaderData?.user} initialConfig={loaderData?.config} allConfigs={loaderData?.allConfigs} />;
 }
