@@ -21,6 +21,8 @@ export function Preview() {
     );
   };
 
+  const isLandscape = config.carousel.aspectRatio === 'landscape';
+
   return (
     <div className="flex flex-col items-center sticky top-8">
       <div className="mb-6 text-center">
@@ -29,14 +31,20 @@ export function Preview() {
       </div>
 
       {/* Mobile Phone Frame */}
-      <div className="w-[375px] bg-gradient-to-b from-gray-800 to-gray-900 rounded-[3.5rem] shadow-2xl p-3 relative">
-        {/* Phone Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-gray-900 rounded-b-3xl z-10"></div>
+      <div className={`bg-gradient-to-b from-gray-800 to-gray-900 rounded-[3.5rem] shadow-2xl p-3 relative transition-all duration-500 ${
+        isLandscape ? 'w-[667px] rotate-0' : 'w-[375px]'
+      }`}>
+        {/* Phone Notch - only show in portrait */}
+        {!isLandscape && (
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-gray-900 rounded-b-3xl z-10"></div>
+        )}
 
         {/* Screen */}
         <div className="bg-white rounded-[2.75rem] overflow-hidden relative">
           {/* Status Bar */}
-          <div className="h-12 bg-white flex items-center justify-between px-6 pt-2">
+          <div className={`bg-white flex items-center justify-between px-6 transition-all duration-500 ${
+            isLandscape ? 'h-10 pt-1' : 'h-12 pt-2'
+          }`}>
             <span className="text-xs font-semibold">9:41</span>
             <div className="flex items-center gap-1">
               <span className="text-xs">📶</span>
@@ -46,7 +54,9 @@ export function Preview() {
           </div>
 
           {/* Content */}
-          <div className="bg-white p-5 space-y-5 pb-8">
+          <div className={`bg-white transition-all duration-500 ${
+            isLandscape ? 'p-6 space-y-4 pb-6' : 'p-5 space-y-5 pb-8'
+          }`}>
             {/* Carousel */}
             <div className="relative">
               <div className={`${aspectRatioClasses[config.carousel.aspectRatio]} relative overflow-hidden rounded-2xl shadow-lg`}>
