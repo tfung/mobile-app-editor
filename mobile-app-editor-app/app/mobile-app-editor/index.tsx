@@ -28,15 +28,15 @@ function ConfigSelector({ allConfigs }: { allConfigs: ConfigResponse[] }) {
   };
 
   return (
-    <div className="flex items-center gap-3">
-      <label htmlFor="config-select" className="text-sm font-medium text-gray-700">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 w-full sm:w-auto">
+      <label htmlFor="config-select" className="text-sm font-medium text-gray-700 whitespace-nowrap">
         Load Version:
       </label>
       <select
         id="config-select"
         onChange={handleConfigChange}
         defaultValue=""
-        className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="w-full sm:w-auto border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       >
         <option value="">Current (Latest)</option>
         {allConfigs.map((config, index) => (
@@ -55,11 +55,11 @@ export default function MobileAppEditor({ user, initialConfig, allConfigs = [] }
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         {/* Header with user info */}
         {user && (
-          <div className="bg-white border-b border-gray-200 px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-6">
+          <div className="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full sm:w-auto">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
                     {user.email[0].toUpperCase()}
                   </div>
                   <div>
@@ -73,7 +73,7 @@ export default function MobileAppEditor({ user, initialConfig, allConfigs = [] }
               <Form method="post" action="/logout">
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                  className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                 >
                   Sign Out
                 </button>
@@ -82,11 +82,15 @@ export default function MobileAppEditor({ user, initialConfig, allConfigs = [] }
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-12 p-8">
-          <div className="overflow-y-auto pr-4">
+        {/* Main Content - Responsive Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 p-4 sm:p-6 lg:p-8">
+          {/* Editor Column */}
+          <div className="order-2 lg:order-1 overflow-y-auto lg:pr-4">
             <Editor />
           </div>
-          <div className="flex justify-center items-start">
+
+          {/* Preview Column */}
+          <div className="order-1 lg:order-2 flex justify-center items-start lg:sticky lg:top-8">
             <Preview />
           </div>
         </div>

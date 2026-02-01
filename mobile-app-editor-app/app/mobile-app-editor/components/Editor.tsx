@@ -128,20 +128,20 @@ export function Editor() {
 
   return (
     <div className="space-y-6">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-start justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Configuration Editor</h2>
-          <p className="text-gray-500 mt-1">Customize your mobile app home screen</p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">Configuration Editor</h2>
+          <p className="text-gray-500 mt-1 text-sm sm:text-base">Customize your mobile app home screen</p>
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-2">
+        <div className="flex flex-col items-stretch sm:items-end gap-2 w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-2">
             <button
               onClick={handleExport}
-              className="px-4 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+              className="w-full sm:w-auto px-4 py-2.5 sm:py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-sm sm:text-base"
             >
               Export JSON
             </button>
-            <label className="px-4 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 cursor-pointer">
+            <label className="w-full sm:w-auto px-4 py-2.5 sm:py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 cursor-pointer text-center text-sm sm:text-base">
               Import JSON
               <input
                 ref={fileInputRef}
@@ -154,7 +154,7 @@ export function Editor() {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+              className="w-full sm:w-auto px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 text-sm sm:text-base"
             >
               {isSaving ? 'Saving...' : 'Save Configuration'}
             </button>
@@ -273,7 +273,7 @@ export function Editor() {
               placeholder="Enter your description"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClasses}>Title Color</label>
               <div className="flex items-center gap-3">
@@ -341,7 +341,7 @@ export function Editor() {
               placeholder="https://example.com"
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClasses}>Background Color</label>
               <div className="flex items-center gap-3">
