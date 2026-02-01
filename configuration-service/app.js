@@ -1,8 +1,11 @@
+// Load environment variables from .env file
+require('dotenv').config();
+
 const express = require('express');
 const configurationsRouter = require('./routes/configurations');
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Different port from main app
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
@@ -10,9 +13,10 @@ app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // CORS middleware (allow requests from your React app)
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', 'http://localhost:5173'); // Adjust to your React app port
+  const allowedOrigin = process.env.MAIN_APP_URL || 'http://localhost:3000';
+  res.header('Access-Control-Allow-Origin', allowedOrigin);
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-User-Id, X-Signature, X-Timestamp');
   res.header('Access-Control-Allow-Credentials', 'true');
 
   // Handle preflight requests

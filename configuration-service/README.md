@@ -39,19 +39,32 @@ The service will start on `http://localhost:3001`
 
 ## API Endpoints
 
-All endpoints require authentication via `X-API-Key` header.
+All endpoints require authentication via multiple security headers.
 
 ### Authentication
 
-Include the API key in request headers:
+**Required Headers:**
 ```
-X-API-Key: config-api-key-user-1
+X-API-Key: service-key-main-app-to-config-service
+X-User-Id: user-1
+X-Signature: <hmac-sha256-signature>
+X-Timestamp: <unix-timestamp-ms>
 ```
 
-**Demo API Keys:**
-- `config-api-key-user-1` (user-1)
-- `config-api-key-user-2` (user-2)
-- `config-api-key-user-3` (user-3)
+**Security Layers:**
+1. **API Key**: Service-to-service authentication
+2. **User ID**: Identifies which user's data to access
+3. **HMAC Signature**: Prevents request tampering
+4. **Timestamp**: Prevents replay attacks (5-minute window)
+
+**Signature Generation:**
+```javascript
+const payload = `${method}:${path}:${body}:${timestamp}`;
+const signature = crypto
+  .createHmac('sha256', SIGNATURE_SECRET)
+  .update(payload)
+  .digest('hex');
+```
 
 ### Endpoints
 

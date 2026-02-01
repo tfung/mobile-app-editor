@@ -1,20 +1,58 @@
 /**
  * Client for calling the Configuration Service API
- * Uses service-to-service authentication with a single service key
+ * Uses service-to-service authentication with API key + HMAC signature
  */
+
+import crypto from 'crypto';
 
 const SERVICE_API_KEY = process.env.CONFIG_SERVICE_API_KEY || 'service-key-main-app-to-config-service';
 const CONFIG_SERVICE_URL = process.env.CONFIG_SERVICE_URL || 'http://localhost:3001';
+const SIGNATURE_SECRET = process.env.SIGNATURE_SECRET || 'signature-secret-change-in-production';
 
 /**
- * Call the Configuration Service API with service authentication
+ * Generate HMAC signature for a request
+ */
+function generateSignature(method: string, path: string, body: string, timestamp: string): string {
+  const payload = `${method}:${path}:${body}:${timestamp}`;
+  return crypto
+    .createHmac('sha256', SIGNATURE_SECRET)
+    .update(payload)
+    .digest('hex');
+}
+
+/**
+ * Call the Configuration Service API with service authentication + signature
  */
 async function callConfigService(userId: string, path: string, options?: RequestInit) {
   const url = `${CONFIG_SERVICE_URL}${path}`;
+  const method = options?.method || 'GET';
+  const timestamp = Date.now().toString();
 
+  // Get body for signature (empty string for GET/DELETE)
+  let body = '';
+  if (options?.body && typeof options.body === 'string') {
+    body = options.body;
+  }
+
+  // Generate signature
+  const signature = generateSignature(method, path, body, timestamp);
+
+  console.log('📤 Sending Request:', {
+    method,
+    path,
+    bodyLength: body.length,
+    timestamp,
+    signature,
+    apiKey: SERVICE_API_KEY,
+    signatureSecret: SIGNATURE_SECRET,
+  });
+
+  // Add authentication and signature headers
   const headers = new Headers(options?.headers);
   headers.set('X-API-Key', SERVICE_API_KEY);
   headers.set('X-User-Id', userId);
+  headers.set('X-Signature', signature);
+  headers.set('X-Timestamp', timestamp);
 
   const response = await fetch(url, {
     ...options,
@@ -57,12 +95,14 @@ export async function getConfigByIdFromService(userId: string, configId: string)
  * Create a new configuration
  */
 export async function createConfigInService(userId: string, data: unknown) {
+  const body = JSON.stringify({ data });
+
   const response = await callConfigService(userId, '/api/configurations', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ data }),
+    body,
   });
 
   if (!response.ok) {
@@ -77,12 +117,14 @@ export async function createConfigInService(userId: string, data: unknown) {
  * Update an existing configuration
  */
 export async function updateConfigInService(userId: string, configId: string, data: unknown) {
+  const body = JSON.stringify({ data });
+
   const response = await callConfigService(userId, `/api/configurations/${configId}`, {
     method: 'PUT',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ data }),
+    body,
   });
 
   if (!response.ok) {
