@@ -1,10 +1,13 @@
 import { useFetcher } from 'react-router';
 import { useEditor } from '../context/EditorContext';
-import { useEffect } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import type { HomeScreenConfig } from '../types';
 
 export function Editor() {
-  const { config, updateTextSection, updateCTA, updateCarousel } = useEditor();
+  const { config, setConfig, updateTextSection, updateCTA, updateCarousel } = useEditor();
   const fetcher = useFetcher();
+  const [importError, setImportError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const inputClasses = "w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200";
   const labelClasses = "block text-sm font-medium text-gray-700 mb-2";
@@ -14,6 +17,80 @@ export function Editor() {
     const formData = new FormData();
     formData.append('config', JSON.stringify(config));
     fetcher.submit(formData, { method: 'post' });
+  };
+
+  const handleExport = () => {
+    const exportData = {
+      carousel: config.carousel,
+      textSection: config.textSection,
+      cta: config.cta,
+    };
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `config-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const validateConfig = (data: unknown): data is HomeScreenConfig => {
+    if (typeof data !== 'object' || data === null) return false;
+
+    const config = data as Record<string, unknown>;
+
+    // Validate carousel
+    if (!config.carousel || typeof config.carousel !== 'object') return false;
+    const carousel = config.carousel as Record<string, unknown>;
+    if (!Array.isArray(carousel.images)) return false;
+    if (!['portrait', 'landscape', 'square'].includes(carousel.aspectRatio as string)) return false;
+
+    // Validate textSection
+    if (!config.textSection || typeof config.textSection !== 'object') return false;
+    const textSection = config.textSection as Record<string, unknown>;
+    if (typeof textSection.title !== 'string' || typeof textSection.description !== 'string') return false;
+    if (typeof textSection.titleColor !== 'string' || typeof textSection.descriptionColor !== 'string') return false;
+
+    // Validate cta
+    if (!config.cta || typeof config.cta !== 'object') return false;
+    const cta = config.cta as Record<string, unknown>;
+    if (typeof cta.label !== 'string' || typeof cta.url !== 'string') return false;
+    if (typeof cta.backgroundColor !== 'string' || typeof cta.textColor !== 'string') return false;
+
+    return true;
+  };
+
+  const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImportError(null);
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const json = JSON.parse(e.target?.result as string);
+
+        if (!validateConfig(json)) {
+          setImportError('Invalid configuration format');
+          return;
+        }
+
+        setConfig(json);
+        setImportError(null);
+      } catch (error) {
+        setImportError('Invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const isSaving = fetcher.state === 'submitting';
@@ -37,16 +114,39 @@ export function Editor() {
           <p className="text-gray-500 mt-1">Customize your mobile app home screen</p>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
-          >
-            {isSaving ? 'Saving...' : 'Save Configuration'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExport}
+              className="px-4 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+            >
+              Export JSON
+            </button>
+            <label className="px-4 py-3 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 cursor-pointer">
+              Import JSON
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".json"
+                onChange={handleImport}
+                className="hidden"
+              />
+            </label>
+            <button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg active:scale-95"
+            >
+              {isSaving ? 'Saving...' : 'Save Configuration'}
+            </button>
+          </div>
           {saveResult && (
             <div className={`text-sm ${saveResult.success ? 'text-green-600' : 'text-red-600'}`}>
               {saveResult.success ? saveResult.message : saveResult.error}
+            </div>
+          )}
+          {importError && (
+            <div className="text-sm text-red-600">
+              {importError}
             </div>
           )}
         </div>
