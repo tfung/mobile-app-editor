@@ -30,17 +30,18 @@ export function createConfig(
 
 /**
  * Get configuration by ID
+ * Requires userId to verify ownership
  */
-export function getConfigById(id: string): ConfigResponse | null {
+export function getConfigById(id: string, userId: string): ConfigResponse | null {
   const db = getDb();
 
   const stmt = db.prepare(`
     SELECT id, schema_version, updated_at, data
     FROM configurations
-    WHERE id = ?
+    WHERE id = ? AND created_by = ?
   `);
 
-  const row = stmt.get(id) as {
+  const row = stmt.get(id, userId) as {
     id: string;
     schema_version: number;
     updated_at: string;
@@ -118,6 +119,7 @@ export function getAllConfigs(userId: string): ConfigResponse[] {
 
 /**
  * Update an existing configuration
+ * Verifies ownership before updating
  */
 export function updateConfig(
   id: string,
@@ -130,13 +132,13 @@ export function updateConfig(
   const stmt = db.prepare(`
     UPDATE configurations
     SET data = ?, updated_at = ?, updated_by = ?
-    WHERE id = ?
+    WHERE id = ? AND created_by = ?
   `);
 
-  const result = stmt.run(JSON.stringify(data), now, userId, id);
+  const result = stmt.run(JSON.stringify(data), now, userId, id, userId);
 
   if (result.changes === 0) {
-    throw new Error("Configuration not found");
+    throw new Error("Configuration not found or access denied");
   }
 
   return {
@@ -160,4 +162,92 @@ export function deleteConfig(id: string, userId: string): boolean {
 
   const result = stmt.run(id, userId);
   return result.changes > 0;
+}
+
+/**
+ * Validate HomeScreenConfig structure and data types
+ */
+export function validateConfig(data: unknown): data is HomeScreenConfig {
+  if (typeof data !== "object" || data === null) {
+    return false;
+  }
+
+  const config = data as Record<string, unknown>;
+
+  // Validate carousel
+  if (!config.carousel || typeof config.carousel !== "object") {
+    return false;
+  }
+  const carousel = config.carousel as Record<string, unknown>;
+
+  if (!Array.isArray(carousel.images) || carousel.images.length === 0) {
+    return false;
+  }
+
+  // Validate each image
+  for (const img of carousel.images) {
+    if (typeof img !== "object" || img === null) return false;
+    const image = img as Record<string, unknown>;
+    if (typeof image.url !== "string" || typeof image.alt !== "string") {
+      return false;
+    }
+    // Validate URL format
+    try {
+      new URL(image.url);
+    } catch {
+      return false;
+    }
+  }
+
+  if (!["portrait", "landscape", "square"].includes(carousel.aspectRatio as string)) {
+    return false;
+  }
+
+  // Validate textSection
+  if (!config.textSection || typeof config.textSection !== "object") {
+    return false;
+  }
+  const textSection = config.textSection as Record<string, unknown>;
+
+  if (typeof textSection.title !== "string" || typeof textSection.description !== "string") {
+    return false;
+  }
+  if (typeof textSection.titleColor !== "string" || typeof textSection.descriptionColor !== "string") {
+    return false;
+  }
+
+  // Validate hex colors
+  const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+  if (!hexColorRegex.test(textSection.titleColor as string) ||
+      !hexColorRegex.test(textSection.descriptionColor as string)) {
+    return false;
+  }
+
+  // Validate cta
+  if (!config.cta || typeof config.cta !== "object") {
+    return false;
+  }
+  const cta = config.cta as Record<string, unknown>;
+
+  if (typeof cta.label !== "string" || typeof cta.url !== "string") {
+    return false;
+  }
+  if (typeof cta.backgroundColor !== "string" || typeof cta.textColor !== "string") {
+    return false;
+  }
+
+  // Validate URL format
+  try {
+    new URL(cta.url as string);
+  } catch {
+    return false;
+  }
+
+  // Validate hex colors
+  if (!hexColorRegex.test(cta.backgroundColor as string) ||
+      !hexColorRegex.test(cta.textColor as string)) {
+    return false;
+  }
+
+  return true;
 }
