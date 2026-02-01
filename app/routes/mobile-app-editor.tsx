@@ -1,6 +1,7 @@
 import type { Route } from "./+types/mobile-app-editor";
+import { redirect } from "react-router";
 import MobileAppEditor from "../mobile-app-editor";
-// import { requirePermission } from "../services/auth.server";
+import { requirePermission, requireUser } from "../services/auth.server";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -9,14 +10,21 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
+export async function loader({ request }: Route.LoaderArgs) {
+  // Require authentication - redirect to login if not authenticated
+  try {
+    const user = await requireUser(request);
+    return { user };
+  } catch (error) {
+    // User not authenticated, redirect to login
+    const url = new URL(request.url);
+    throw redirect(`/login?redirectTo=${encodeURIComponent(url.pathname)}`);
+  }
+}
+
 export async function action({ request }: Route.ActionArgs) {
   // ✅ Require authentication and "write" permission
-  // const user = await requirePermission(request, "write");
-  const user = {
-    id: "user-123",
-    email: "admin@example.com",
-    role: "admin"
-  }
+  const user = await requirePermission(request, "write");
 
   const formData = await request.formData();
   const configData = formData.get("config");
@@ -48,6 +56,6 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function MobileAppEditorRoute() {
-  return <MobileAppEditor />;
+export default function MobileAppEditorRoute({ loaderData }: Route.ComponentProps) {
+  return <MobileAppEditor user={loaderData?.user} />;
 }
