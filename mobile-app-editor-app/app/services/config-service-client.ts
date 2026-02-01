@@ -1,0 +1,112 @@
+/**
+ * Client for calling the Configuration Service API
+ * Uses service-to-service authentication with a single service key
+ */
+
+const SERVICE_API_KEY = process.env.CONFIG_SERVICE_API_KEY || 'service-key-main-app-to-config-service';
+const CONFIG_SERVICE_URL = process.env.CONFIG_SERVICE_URL || 'http://localhost:3001';
+
+/**
+ * Call the Configuration Service API with service authentication
+ */
+async function callConfigService(userId: string, path: string, options?: RequestInit) {
+  const url = `${CONFIG_SERVICE_URL}${path}`;
+
+  const headers = new Headers(options?.headers);
+  headers.set('X-API-Key', SERVICE_API_KEY);
+  headers.set('X-User-Id', userId);
+
+  const response = await fetch(url, {
+    ...options,
+    headers,
+  });
+
+  return response;
+}
+
+/**
+ * Get all configurations for a user
+ */
+export async function getAllConfigsFromService(userId: string) {
+  const response = await callConfigService(userId, '/api/configurations');
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch configurations: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Get a configuration by ID
+ */
+export async function getConfigByIdFromService(userId: string, configId: string) {
+  const response = await callConfigService(userId, `/api/configurations/${configId}`);
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return null;
+    }
+    throw new Error(`Failed to fetch configuration: ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Create a new configuration
+ */
+export async function createConfigInService(userId: string, data: unknown) {
+  const response = await callConfigService(userId, '/api/configurations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ data }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to create configuration');
+  }
+
+  return response.json();
+}
+
+/**
+ * Update an existing configuration
+ */
+export async function updateConfigInService(userId: string, configId: string, data: unknown) {
+  const response = await callConfigService(userId, `/api/configurations/${configId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ data }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Failed to update configuration');
+  }
+
+  return response.json();
+}
+
+/**
+ * Delete a configuration
+ */
+export async function deleteConfigFromService(userId: string, configId: string) {
+  const response = await callConfigService(userId, `/api/configurations/${configId}`, {
+    method: 'DELETE',
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      return false;
+    }
+    throw new Error(`Failed to delete configuration: ${response.statusText}`);
+  }
+
+  return true;
+}

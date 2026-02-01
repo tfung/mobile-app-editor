@@ -2,7 +2,7 @@ import type { Route } from "./+types/mobile-app-editor";
 import { redirect } from "react-router";
 import MobileAppEditor from "../mobile-app-editor";
 import { requireUser, getUser } from "../services/auth.server";
-import { getAllConfigs, createConfig } from "../services/config.server";
+import { getAllConfigsFromService, createConfigInService } from "../services/config-service-client";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -20,8 +20,8 @@ export async function loader({ request }: Route.LoaderArgs) {
     throw redirect(`/login?redirectTo=${encodeURIComponent(url.pathname)}`);
   }
 
-  // Get all configurations for dropdown
-  const allConfigs = getAllConfigs(user.id);
+  // Call Configuration Service with service key + user ID
+  const allConfigs = await getAllConfigsFromService(user.id);
 
   // Always load the latest configuration
   const currentConfig = allConfigs.length > 0 ? allConfigs[0] : null;
@@ -43,8 +43,8 @@ export async function action({ request }: Route.ActionArgs) {
   try {
     const config = JSON.parse(configData as string);
 
-    // Always create a new configuration version (never update)
-    const savedConfig = createConfig(user.id, config);
+    // Call Configuration Service to create new configuration
+    const savedConfig = await createConfigInService(user.id, config);
     console.log("✅ New configuration version created:", savedConfig.id);
 
     return {

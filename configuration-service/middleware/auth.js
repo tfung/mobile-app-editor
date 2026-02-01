@@ -1,23 +1,14 @@
 /**
  * Authentication middleware for the Configuration Service
- * Validates API key from headers and extracts user ID
+ * Uses service-to-service authentication with a single trusted service key
  */
 
-// In a real application, you would:
-// 1. Store API keys in a database with associated user IDs
-// 2. Use JWT tokens with proper signing
-// 3. Implement rate limiting
-// 4. Add request logging
-
-// For demo purposes, we'll use simple API key validation
-const VALID_API_KEYS = {
-  'config-api-key-user-1': 'user-1',
-  'config-api-key-user-2': 'user-2',
-  'config-api-key-user-3': 'user-3',
-};
+// Service API key for main app authentication
+const SERVICE_API_KEY = process.env.SERVICE_API_KEY || 'service-key-main-app-to-config-service';
 
 /**
- * Middleware to require authentication via API key
+ * Middleware to require authentication via service API key
+ * Requires both X-API-Key (service key) and X-User-Id (user identifier) headers
  */
 function requireAuth(req, res, next) {
   const apiKey = req.headers['x-api-key'];
@@ -29,12 +20,21 @@ function requireAuth(req, res, next) {
     });
   }
 
-  const userId = VALID_API_KEYS[apiKey];
+  // Verify service API key
+  if (apiKey !== SERVICE_API_KEY) {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Invalid API key',
+    });
+  }
+
+  // Require user ID from trusted service
+  const userId = req.headers['x-user-id'];
 
   if (!userId) {
     return res.status(401).json({
       error: 'Unauthorized',
-      message: 'Invalid API key',
+      message: 'X-User-Id header is required',
     });
   }
 
