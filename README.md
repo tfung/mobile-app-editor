@@ -143,6 +143,12 @@ Open your browser to: **http://localhost:3000**
   - Validation rules
   - Security considerations
 
+- **[Testing Guide](TESTING.md)**
+  - Comprehensive test coverage (58 tests)
+  - Running tests for both services
+  - Test philosophy and strategy
+  - Adding new tests
+
 ### API Overview
 
 The Configuration Service exposes a REST API:
@@ -205,6 +211,26 @@ mobile-app-editor/
 4. **Modify schema**: Update TypeScript types and database schema
 
 ### Testing
+
+**Automated Tests:**
+
+The project includes comprehensive test suites for both services with 58 total tests:
+
+**Configuration Service** (38 tests):
+```bash
+cd configuration-service
+npm test                  # Run all tests with coverage
+npm run test:watch        # Run in watch mode
+```
+
+**Main App** (20 tests):
+```bash
+cd mobile-app-editor-app
+npm test                  # Run all tests with coverage
+npm run test:watch        # Run in interactive watch mode
+```
+
+See [TESTING.md](TESTING.md) for detailed testing guide.
 
 **Manual Testing:**
 - Use the application at http://localhost:3000
@@ -351,6 +377,7 @@ This project fulfills all requirements from the take-home challenge specificatio
 - Separation of concerns
 - TypeScript for type safety
 - Comprehensive documentation
+- Tested code with 58 passing tests (validation, auth, state, components)
 
 ## License
 

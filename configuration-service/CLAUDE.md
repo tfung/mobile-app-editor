@@ -19,8 +19,11 @@ configuration-service/
 ├── middleware/
 │   ├── auth.js                     # HMAC authentication
 │   └── validation.js               # Input validation
-└── routes/
-    └── configurations.js           # REST API endpoints
+├── routes/
+│   └── configurations.js           # REST API endpoints
+└── __tests__/
+    ├── validation.test.js          # Validation unit tests (40+ tests)
+    └── auth.test.js                # Auth middleware tests (20+ tests)
 ```
 
 ## Critical Security Layers
@@ -295,9 +298,34 @@ app.use((req, res, next) => {
 - Include all auth headers in allowed headers
 - Handle OPTIONS preflight requests
 
-## Testing
+## Automated Testing
 
-### Manual Testing with cURL
+**Test Coverage (38 tests):**
+- Input validation (40+ test cases)
+- HMAC authentication (20+ test cases)
+
+**Running Tests:**
+```bash
+npm test              # Run all tests with coverage
+npm run test:watch    # Watch mode
+```
+
+**Test Framework:**
+- Jest for unit tests
+- Supertest for API integration tests
+- In-memory SQLite for test isolation
+
+**What's Tested:**
+- **Validation**: Valid configs, invalid formats, hex colors, URLs, aspect ratios, edge cases
+- **Authentication**: Signature generation, API key validation, timestamp validation, replay prevention, request tampering detection, trailing slash normalization
+
+**Coverage:**
+- Validation: 76.47% statements, 84.48% branches
+- Auth: 100% statements, 87.5% branches
+
+See [TESTING.md](../TESTING.md) for full guide.
+
+## Manual Testing with cURL
 
 Generate signature first:
 

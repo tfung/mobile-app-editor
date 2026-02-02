@@ -19,7 +19,10 @@ Browser → Main App (React Router, port 3000) → Configuration Service (Expres
 ```
 mobile-app-editor/
 ├── mobile-app-editor-app/     # React Router app (TypeScript)
-└── configuration-service/     # Express API (JavaScript)
+│   └── app/__tests__/         # Component & context tests (Vitest)
+├── configuration-service/     # Express API (JavaScript)
+│   └── __tests__/             # Validation & auth tests (Jest)
+└── TESTING.md                 # Comprehensive testing guide
 ```
 
 ## Critical Patterns to Maintain
@@ -119,7 +122,27 @@ Page reload → Server loader → API call → Hydrate EditorContext
 
 ## Testing Strategy
 
-When testing:
+### Automated Tests (58 total)
+
+**Configuration Service (38 tests):**
+- Validation logic (40+ test cases)
+- Authentication middleware (20+ test cases)
+- Run with: `cd configuration-service && npm test`
+
+**Main App (20 tests):**
+- EditorContext state management (6 tests)
+- Preview component rendering (14 tests)
+- Run with: `cd mobile-app-editor-app && npm test`
+
+**Test Frameworks:**
+- Configuration Service: Jest + Supertest
+- Main App: Vitest + React Testing Library
+
+See [TESTING.md](TESTING.md) for complete guide.
+
+### Manual Testing
+
+When testing manually:
 1. Test with multiple users to ensure isolation
 2. Test page reload to verify persistence
 3. Test import/export JSON functionality

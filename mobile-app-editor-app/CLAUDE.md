@@ -26,6 +26,10 @@ app/
 │   └── index.tsx                      # Main page layout
 ├── services/
 │   └── config-service-client.ts       # Configuration Service client
+├── __tests__/
+│   ├── setup.ts                       # Test setup (@testing-library/jest-dom)
+│   ├── EditorContext.test.tsx         # Context state management tests
+│   └── Preview.test.tsx               # Preview component tests
 └── root.tsx                           # App root with meta tags
 ```
 
@@ -305,7 +309,37 @@ SIGNATURE_SECRET=signature-secret-change-in-production  # MUST match Configurati
 SESSION_SECRET=your-secret-key-change-this-in-production
 ```
 
-## Testing Checklist
+## Automated Testing
+
+**Test Coverage (20 tests):**
+- EditorContext state management (6 tests)
+- Preview component rendering (14 tests)
+
+**Running Tests:**
+```bash
+npm test              # Run all tests with coverage
+npm run test:watch    # Interactive watch mode
+```
+
+**Test Framework:**
+- Vitest with React Testing Library
+- happy-dom environment
+- Coverage with v8 provider
+
+**What's Tested:**
+- Initial config from loader
+- Partial state updates (updateTextSection, updateCTA, updateCarousel)
+- Full config replacement (setConfig)
+- Field preservation during partial updates
+- Preview renders correct content
+- Color styles applied correctly
+- Carousel images and navigation
+- Aspect ratio handling
+- Read-only preview behavior
+
+See [TESTING.md](../TESTING.md) for full guide.
+
+## Manual Testing Checklist
 
 - [ ] Edit fields → Preview updates immediately
 - [ ] Click Save → Success message appears

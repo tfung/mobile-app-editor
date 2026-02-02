@@ -403,6 +403,44 @@ docker run -p 3000:3000 mobile-app-editor
 
 ## Testing
 
+### Automated Tests
+
+The app includes comprehensive tests for components and context:
+
+**Test Coverage (20 tests):**
+- EditorContext state management (6 tests)
+- Preview component rendering (14 tests)
+
+**Running Tests:**
+
+```bash
+# Run all tests with coverage
+npm test
+
+# Run in interactive watch mode
+npm run test:watch
+
+# View coverage report
+# After running tests, open: coverage/index.html
+```
+
+**Test Framework:**
+- Vitest with React Testing Library
+- happy-dom for lightweight DOM
+- Coverage with v8 provider
+
+**What's Tested:**
+- Initial config loading
+- Partial state updates (text, carousel, CTA)
+- Full config replacement
+- Preview rendering with correct content
+- Color application
+- Carousel images and navigation
+- Aspect ratio handling
+- Read-only preview behavior
+
+See [TESTING.md](../TESTING.md) for detailed testing guide.
+
 ### Manual Testing Checklist
 
 **Editor Functionality:**

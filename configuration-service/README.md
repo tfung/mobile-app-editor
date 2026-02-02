@@ -646,6 +646,51 @@ sqlite3 data/configurations.db "SELECT * FROM configurations;"
 
 ---
 
+## Testing
+
+### Automated Tests
+
+The service includes comprehensive unit and integration tests:
+
+**Test Coverage (38 tests):**
+- Input validation (40+ test cases)
+- HMAC authentication (20+ test cases)
+
+**Running Tests:**
+
+```bash
+# Run all tests with coverage
+npm test
+
+# Run in watch mode
+npm run test:watch
+
+# View coverage report
+# After running tests, open: coverage/index.html
+```
+
+**Test Framework:**
+- Jest for testing
+- Supertest for API integration tests
+- In-memory SQLite for test isolation
+
+**What's Tested:**
+- Valid configurations (all aspect ratios, multiple images)
+- Invalid configurations (missing fields, invalid formats)
+- Hex color validation (#RRGGBB format)
+- URL validation
+- HMAC signature generation and verification
+- API key validation
+- User ID requirement
+- Timestamp validation (5-minute window)
+- Replay attack prevention
+- Request tampering detection
+- Trailing slash normalization
+
+See [TESTING.md](../TESTING.md) for detailed testing guide.
+
+---
+
 ## Troubleshooting
 
 ### "Invalid signature" errors

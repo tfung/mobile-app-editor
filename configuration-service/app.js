@@ -56,9 +56,14 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`🚀 Configuration Service running on http://localhost:${PORT}`);
-  console.log(`📚 API Docs: http://localhost:${PORT}/api/configurations`);
-  console.log(`🔐 Authentication: Use X-API-Key header`);
-});
+// Only start the server if this file is run directly (not in tests)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Configuration Service running on http://localhost:${PORT}`);
+    console.log(`📚 API Docs: http://localhost:${PORT}/api/configurations`);
+    console.log(`🔐 Authentication: Use X-API-Key header`);
+  });
+}
+
+// Export app for testing
+module.exports = app;
