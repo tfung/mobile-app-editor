@@ -131,6 +131,11 @@ const handleSave = () => {
 };
 ```
 
+**Reusable Components:**
+- `ColorInput` - Reusable color picker with hex input (used 4 times)
+  - Takes: label, value, onChange, placeholder
+  - Includes `min-w-16` to prevent shrinking on small screens
+
 **Adding new fields:**
 1. Add input element with `value={config.section.field}`
 2. Add `onChange` handler that calls `updateSection({ field: newValue })`
@@ -302,12 +307,14 @@ const validateConfig = (data: unknown): data is HomeScreenConfig => {
 ## Environment Variables
 
 ```bash
-PORT=3000                                           # App port
-CONFIG_SERVICE_URL=http://localhost:3001           # Configuration Service URL
-CONFIG_SERVICE_API_KEY=service-key-main-app-to-config-service
-SIGNATURE_SECRET=signature-secret-change-in-production  # MUST match Configuration Service
-SESSION_SECRET=your-secret-key-change-this-in-production
+PORT=3000                                           # App port (optional, defaults to 3000)
+CONFIG_SERVICE_URL=http://localhost:3001           # Configuration Service URL (REQUIRED)
+CONFIG_SERVICE_API_KEY=service-key-main-app-to-config-service  # (REQUIRED)
+SIGNATURE_SECRET=signature-secret-change-in-production  # MUST match Configuration Service (REQUIRED)
+SESSION_SECRET=your-secret-key-change-this-in-production  # (REQUIRED)
 ```
+
+**Important:** All variables except PORT are required. The app validates environment variables at startup and will throw clear errors if any are missing. No default fallbacks are provided for security.
 
 ## Automated Testing
 

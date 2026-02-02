@@ -151,18 +151,20 @@ When testing manually:
 
 ## Environment Variables
 
+**Important:** All environment variables (except PORT) are **required** with no default fallbacks. The application will fail-fast if any are missing.
+
 Both services need:
-- `SIGNATURE_SECRET` - MUST match exactly
-- `SERVICE_API_KEY` / `CONFIG_SERVICE_API_KEY` - MUST match
+- `SIGNATURE_SECRET` - MUST match exactly (REQUIRED)
+- `SERVICE_API_KEY` / `CONFIG_SERVICE_API_KEY` - MUST match (REQUIRED)
 
 Configuration Service needs:
 - `PORT` (default: 3001)
-- `MAIN_APP_URL` (for CORS)
+- `MAIN_APP_URL` - CORS origin (REQUIRED)
 
 Main App needs:
 - `PORT` (default: 3000)
-- `CONFIG_SERVICE_URL` (points to Configuration Service)
-- `SESSION_SECRET` (for user sessions)
+- `CONFIG_SERVICE_URL` - Points to Configuration Service (REQUIRED)
+- `SESSION_SECRET` - For user sessions (REQUIRED)
 
 ## Database Schema
 

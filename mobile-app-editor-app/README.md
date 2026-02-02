@@ -149,9 +149,11 @@ SESSION_SECRET=your-secret-key-change-this-in-production
 ```
 
 **Important:**
+- **All variables (except PORT) are required** - the app will fail to start if any are missing
 - The `SIGNATURE_SECRET` must match between this app and the Configuration Service
 - Generate strong secrets for production: `openssl rand -hex 32`
 - Never commit secrets to version control
+- No default fallback values are provided for security reasons
 
 ### Running the Application
 

@@ -52,7 +52,10 @@ SERVICE_API_KEY=service-key-main-app-to-config-service
 SIGNATURE_SECRET=signature-secret-change-in-production
 ```
 
-**Security Note:** In production, generate strong secrets using `openssl rand -hex 32` and store them securely.
+**Security Note:**
+- **All variables (except PORT) are required** - the service will fail to start if any are missing
+- In production, generate strong secrets using `openssl rand -hex 32` and store them securely
+- No default fallback values are provided to prevent accidental use of insecure defaults
 
 ### Running the Service
 

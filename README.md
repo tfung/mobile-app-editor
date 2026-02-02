@@ -105,7 +105,10 @@ SIGNATURE_SECRET=signature-secret-change-in-production
 SESSION_SECRET=your-secret-key-change-this-in-production
 ```
 
-**Important:** The `SIGNATURE_SECRET` must match in both `.env` files.
+**Important:**
+- All environment variables (except PORT) are **required** - there are no default fallbacks
+- The `SIGNATURE_SECRET` must match in both `.env` files
+- The application will fail to start if any required variables are missing
 
 ### 3. Start the Services
 
@@ -274,11 +277,16 @@ For detailed rationale, see [Main App README - Notable Tradeoffs](mobile-app-edi
    ```bash
    openssl rand -hex 32  # For SIGNATURE_SECRET
    openssl rand -hex 32  # For SESSION_SECRET
+   openssl rand -hex 32  # For SERVICE_API_KEY
    ```
 
-2. Configure production environment variables
+2. Configure production environment variables (all required - no defaults)
 
 3. Set up proper user authentication (OAuth, JWT, etc.)
+
+4. Ensure all required environment variables are set:
+   - Configuration Service: `MAIN_APP_URL`, `SERVICE_API_KEY`, `SIGNATURE_SECRET`
+   - Main App: `CONFIG_SERVICE_URL`, `CONFIG_SERVICE_API_KEY`, `SIGNATURE_SECRET`, `SESSION_SECRET`
 
 ### Database Migration
 

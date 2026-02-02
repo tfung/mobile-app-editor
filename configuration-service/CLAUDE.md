@@ -57,33 +57,38 @@ if (Date.now() - timestamp > 5 * 60 * 1000) return 401;
 
 ### 2. Input Validation (middleware/validation.js)
 
+Uses helper functions for cleaner validation:
+
 ```javascript
-// Validates entire HomeScreenConfig structure
+// Constants
+const HEX_COLOR_REGEX = /^#[0-9A-Fa-f]{6}$/;
+const VALID_ASPECT_RATIOS = ['portrait', 'landscape', 'square'];
+
+// Helper functions
+function validateField(condition, errorMessage) { ... }
+function validateHexColor(color, fieldName) { ... }
+function validateUrl(url, fieldName) { ... }
+
+// Main validation function
 function validateConfig(data) {
-  // Check carousel
-  if (!Array.isArray(data.carousel.images)) return error;
-  if (images.length === 0) return error;
+  let error;
 
-  // Validate URLs
-  for (image of images) {
-    new URL(image.url);  // Throws if invalid
-  }
+  error = validateField(condition, 'Error message');
+  if (error) return error;
 
-  // Validate hex colors
-  const hexRegex = /^#[0-9A-Fa-f]{6}$/;
-  if (!hexRegex.test(color)) return error;
+  error = validateUrl(data.cta.url, 'CTA URL');
+  if (error) return error;
 
-  // Validate aspect ratio
-  if (!['portrait', 'landscape', 'square'].includes(ratio)) return error;
+  error = validateHexColor(data.textSection.titleColor, 'Title color');
+  if (error) return error;
 }
 ```
 
 **Rules:**
-- Validate ALL fields
-- Use `new URL()` for URL validation (throws on invalid)
-- Hex colors MUST be exactly `#RRGGBB` format
-- At least one carousel image required
-- Return descriptive error messages
+- Use helper functions for reusable validation
+- Constants for regex patterns and valid values
+- Descriptive field names in error messages
+- Early returns for cleaner code flow
 
 ### 3. Ownership Verification (db.js)
 
@@ -207,15 +212,18 @@ router.delete('/:id', requireAuth, (req, res) => {
 ## Environment Variables
 
 ```bash
-PORT=3001                                    # Server port
-MAIN_APP_URL=http://localhost:3000         # For CORS
-SERVICE_API_KEY=service-key-main-app-to-config-service
-SIGNATURE_SECRET=signature-secret-change-in-production  # MUST match Main App
+PORT=3001                                    # Server port (optional, defaults to 3001)
+MAIN_APP_URL=http://localhost:3000         # For CORS (REQUIRED)
+SERVICE_API_KEY=service-key-main-app-to-config-service  # (REQUIRED)
+SIGNATURE_SECRET=signature-secret-change-in-production  # MUST match Main App (REQUIRED)
 ```
 
 **Critical:**
+- **All variables except PORT are required** - service validates at startup
 - `SIGNATURE_SECRET` must match Main App exactly
 - `SERVICE_API_KEY` must match Main App's `CONFIG_SERVICE_API_KEY`
+- No default fallbacks provided for security
+- Clear error messages if variables are missing
 - Never commit secrets to version control
 
 ## Common Tasks
