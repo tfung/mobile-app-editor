@@ -60,7 +60,7 @@ SIGNATURE_SECRET=signature-secret-change-in-production
 ### Running the Service
 
 ```bash
-node app.js
+npm run dev
 
 # The service will start on http://localhost:3001
 ```
@@ -691,67 +691,6 @@ npm run test:watch
 - Trailing slash normalization
 
 See [TESTING.md](../TESTING.md) for detailed testing guide.
-
----
-
-## Troubleshooting
-
-### "Invalid signature" errors
-
-1. Ensure `SIGNATURE_SECRET` matches between main app and configuration service
-2. Verify timestamp is current (within 5 minutes)
-3. Check that signature payload format matches exactly:
-   - Method should be uppercase (GET, POST, PUT, DELETE)
-   - Path should include full path (e.g., `/api/configurations`)
-   - Body should be JSON.stringify() output for POST/PUT, or empty string for GET/DELETE
-4. Ensure no trailing slashes in path
-
-### "Request timestamp is too old" errors
-
-- Server and client clocks are out of sync by more than 5 minutes
-- Synchronize system clocks or adjust the timestamp window in middleware
-
-### CORS errors
-
-- Verify `MAIN_APP_URL` in `.env` matches your main app's URL
-- Check that all required headers are in `Access-Control-Allow-Headers`
-
-### Database locked errors
-
-- SQLite WAL mode should prevent most locking issues
-- Ensure only one process is accessing the database
-- Check file permissions on the database directory
-
----
-
-## Production Deployment
-
-Before deploying to production:
-
-1. **Secrets Management:**
-   - Generate strong secrets: `openssl rand -hex 32`
-   - Use environment variables or secret management service
-   - Never commit secrets to version control
-
-2. **Environment Configuration:**
-   - Set appropriate `PORT` and `MAIN_APP_URL`
-   - Configure CORS for production domain
-
-3. **Database:**
-   - Consider PostgreSQL or MySQL for production scale
-   - Implement backup strategy
-   - Set up monitoring for database size and performance
-
-4. **Security:**
-   - Enable HTTPS/TLS
-   - Add rate limiting (e.g., express-rate-limit)
-   - Implement request logging
-   - Set up monitoring and alerting
-
-5. **Performance:**
-   - Add caching layer if needed
-   - Monitor API response times
-   - Consider horizontal scaling if needed
 
 ---
 

@@ -81,9 +81,13 @@ cd mobile-app-editor
 # Install dependencies for both services
 cd mobile-app-editor-app
 npm install
+cp .env.example .env
 
-cd ../configuration-service
+cd ..
+
+cd configuration-service
 npm install
+cp .env.example .env
 ```
 
 ### 2. Configure Environment Variables
@@ -115,7 +119,7 @@ SESSION_SECRET=your-secret-key-change-this-in-production
 **Terminal 1 - Configuration Service:**
 ```bash
 cd configuration-service
-node app.js
+npm run dev
 ```
 
 **Terminal 2 - Main App:**
@@ -268,124 +272,6 @@ See [TESTING.md](TESTING.md) for detailed testing guide.
 - **Production:** Migrate to PostgreSQL
 
 For detailed rationale, see [Main App README - Notable Tradeoffs](mobile-app-editor-app/README.md#notable-tradeoffs-and-assumptions).
-
-## Production Deployment
-
-### Environment Setup
-
-1. Generate strong secrets:
-   ```bash
-   openssl rand -hex 32  # For SIGNATURE_SECRET
-   openssl rand -hex 32  # For SESSION_SECRET
-   openssl rand -hex 32  # For SERVICE_API_KEY
-   ```
-
-2. Configure production environment variables (all required - no defaults)
-
-3. Set up proper user authentication (OAuth, JWT, etc.)
-
-4. Ensure all required environment variables are set:
-   - Configuration Service: `MAIN_APP_URL`, `SERVICE_API_KEY`, `SIGNATURE_SECRET`
-   - Main App: `CONFIG_SERVICE_URL`, `CONFIG_SERVICE_API_KEY`, `SIGNATURE_SECRET`, `SESSION_SECRET`
-
-### Database Migration
-
-For production, migrate from SQLite to PostgreSQL:
-
-1. Export data from SQLite
-2. Set up PostgreSQL instance
-3. Update database connection in `configuration-service/db.js`
-4. Import data to PostgreSQL
-
-### Security Checklist
-
-- [ ] Use strong, randomly generated secrets
-- [ ] Enable HTTPS/TLS for all communication
-- [ ] Implement rate limiting
-- [ ] Add request logging and monitoring
-- [ ] Set up proper user authentication
-- [ ] Configure CORS for production domains
-- [ ] Enable security headers (helmet.js)
-
-### Deployment Options
-
-Both services can be deployed to:
-- AWS (ECS, Lambda, Elastic Beanstalk)
-- Google Cloud (Cloud Run, App Engine)
-- Azure (Container Apps, App Service)
-- Heroku, Railway, Fly.io
-- Digital Ocean App Platform
-
-## Troubleshooting
-
-### "Cannot connect to Configuration Service"
-```bash
-# Ensure Configuration Service is running on port 3001
-cd configuration-service
-node app.js
-```
-
-### "Invalid signature" errors
-1. Check that `SIGNATURE_SECRET` matches in both `.env` files
-2. Restart both services after changing environment variables
-3. Verify timestamps are within 5-minute window
-
-### Port conflicts
-```bash
-# Check what's using the ports
-lsof -i :3000
-lsof -i :3001
-
-# Change PORT in .env files if needed
-```
-
-For more troubleshooting, see individual service READMEs.
-
-## Contributing
-
-### Code Style
-
-- TypeScript for type safety
-- ESLint for code quality
-- Prettier for formatting
-- Tailwind for styling
-
-### Before Submitting
-
-1. Test all functionality manually
-2. Check for TypeScript errors: `npm run typecheck`
-3. Ensure both services start without errors
-4. Verify configurations persist after reload
-5. Test on different screen sizes
-
-## Specifications Compliance
-
-This project fulfills all requirements from the take-home challenge specifications:
-
-✅ **Functional Requirements:**
-- Preview screen with carousel, text section, and CTA
-- Real-time preview updates
-- Import/export JSON configurations
-- Responsive interface
-
-✅ **Backend Requirements:**
-- Configuration service with REST API
-- Schema versioning and timestamps
-- Server-side validation
-- SQLite storage with clear tradeoffs documented
-
-✅ **Security Requirements:**
-- Private authentication (API keys never exposed to browser)
-- Server-side API access via loaders/actions
-- HMAC signature verification
-- Per-user configuration isolation
-
-✅ **Code Quality:**
-- Clean, modular architecture
-- Separation of concerns
-- TypeScript for type safety
-- Comprehensive documentation
-- Tested code with 58 passing tests (validation, auth, state, components)
 
 ## License
 

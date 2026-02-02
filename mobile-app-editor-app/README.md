@@ -26,17 +26,12 @@ A full-stack web application that allows users to preview and modify a mobile ap
 
 ### Implementation Enhancements
 
-This implementation includes optional enhancements and thoughtful deviations from the original specification:
+This implementation includes optional enhancements beyond the original specification:
 
-1. **📜 Configuration History** (Enhancement): Each save creates a new version rather than updating in place, providing:
-   - Complete audit trail of all changes
-   - Version dropdown to load and restore previous configurations
-   - Never lose data - full rollback capability
-
-2. **🔢 Integer IDs** (Deviation): Uses auto-incrementing integers instead of UUID strings:
-   - Simpler, more readable IDs (1, 2, 3...)
-   - Better database performance
-   - Natural chronological ordering
+**📜 Configuration History**: Each save creates a new version rather than updating in place, providing:
+- Complete audit trail of all changes
+- Version dropdown to load and restore previous configurations
+- Never lose data - full rollback capability
 
 See [Notable Tradeoffs](#notable-tradeoffs-and-assumptions) for detailed rationale and architectural decisions.
 
@@ -318,25 +313,7 @@ interface HomeScreenConfig {
 - ⚠️ Tradeoff: No end-user authentication built in
 - **Assumption**: User authentication is handled by the main app's session layer
 
-### 3. Carousel: Native CSS vs Library
-**Choice:** Native CSS scroll-snap
-**Rationale:**
-- ✅ No additional dependencies
-- ✅ Better performance (hardware accelerated)
-- ✅ Touch/swipe works automatically
-- ✅ Simple implementation
-- ⚠️ Tradeoff: Less control over animation timing
-
-### 4. State Management: Context vs Redux
-**Choice:** React Context + Hooks
-**Rationale:**
-- ✅ Sufficient for single-page state management
-- ✅ No additional dependencies
-- ✅ Idiomatic React approach
-- ✅ Simple mental model
-- ⚠️ Tradeoff: Would need Redux for complex state trees
-
-### 5. Validation: Client + Server
+### 3. Validation: Client + Server
 **Choice:** Duplicate validation on both sides
 **Rationale:**
 - ✅ Better UX with immediate client-side feedback
@@ -344,17 +321,7 @@ interface HomeScreenConfig {
 - ⚠️ Tradeoff: Validation logic must be kept in sync
 - **Mitigation**: Shared validation logic could be extracted to a shared package
 
-### 6. ID Type: Integer vs UUID
-**Choice:** Auto-incrementing integer IDs
-**Rationale:**
-- ✅ Simpler and more readable (1, 2, 3 vs UUID strings)
-- ✅ Better database performance (smaller index size)
-- ✅ Natural ordering by creation time
-- ⚠️ Deviation from spec: Original spec specified `id: string` (UUID)
-- ⚠️ Tradeoff: Not suitable for distributed systems without coordination
-- **Assumption**: Single-instance deployment, sequential IDs acceptable
-
-### 7. Configuration History: Versioning vs Update-in-Place
+### 4. Configuration History: Versioning vs Update-in-Place
 **Choice:** Create new configuration on each save (versioning)
 **Rationale:**
 - ✅ Full audit trail of all changes
@@ -365,7 +332,7 @@ interface HomeScreenConfig {
 - ⚠️ Tradeoff: Database grows with each save (mitigated by SQLite's small footprint)
 - **Note**: This implements the optional "support for multiple configurations" enhancement
 
-### 8. Configuration Versioning: Schema Version Field
+### 5. Configuration Versioning: Schema Version Field
 **Choice:** Single `schemaVersion` number
 **Rationale:**
 - ✅ Simple to implement and understand
@@ -373,72 +340,13 @@ interface HomeScreenConfig {
 - ✅ Each record tracks its own version
 - ⚠️ Assumption: Schema changes will be backward compatible or handled with migrations
 
-### 9. Real-time Updates: Optimistic UI vs Server State
+### 6. Real-time Updates: Optimistic UI vs Server State
 **Choice:** Optimistic in-memory updates, explicit save required
 **Rationale:**
 - ✅ Clear distinction between "editing" and "saved" state
 - ✅ User controls when to persist changes
 - ✅ Prevents accidental overwrites
 - ⚠️ Tradeoff: No autosave (could be added as enhancement)
-
-## Production Considerations
-
-Before deploying to production:
-
-### Security
-- [ ] Generate strong secrets with `openssl rand -hex 32`
-- [ ] Use environment variable management (e.g., AWS Secrets Manager)
-- [ ] Enable HTTPS/TLS for all communication
-- [ ] Add rate limiting to prevent abuse
-- [ ] Implement proper user authentication (OAuth, JWT)
-- [ ] Add request logging and monitoring
-
-### Performance
-- [ ] Enable response compression
-- [ ] Add caching headers for static assets
-- [ ] Consider CDN for static assets
-- [ ] Add database connection pooling
-- [ ] Implement pagination for configuration lists
-- [ ] Monitor API response times
-
-### Scalability
-- [ ] Migrate from SQLite to PostgreSQL or MySQL
-- [ ] Consider Redis for session storage
-- [ ] Horizontal scaling with load balancer
-- [ ] Separate file storage for uploaded images
-- [ ] Implement proper backup strategy
-
-### Observability
-- [ ] Structured logging (e.g., Winston, Pino)
-- [ ] Error tracking (e.g., Sentry)
-- [ ] Performance monitoring (e.g., New Relic)
-- [ ] Health check endpoints
-- [ ] Metrics and dashboards
-
-## Development
-
-### Building for Production
-
-```bash
-npm run build
-```
-
-The build outputs to `./build/`:
-- `build/client/` - Static assets for CDN
-- `build/server/` - Server-side code
-
-### Running Production Build
-
-```bash
-npm start
-```
-
-### Docker Deployment
-
-```bash
-docker build -t mobile-app-editor .
-docker run -p 3000:3000 mobile-app-editor
-```
 
 ## Testing
 
@@ -511,51 +419,6 @@ See [TESTING.md](../TESTING.md) for detailed testing guide.
 - [ ] Works on tablet (640px - 1024px)
 - [ ] Works on desktop (> 1024px)
 - [ ] Color pickers don't shrink too small
-
-## Troubleshooting
-
-### "Failed to fetch configurations: Unauthorized"
-
-**Cause:** HMAC signature verification failing
-
-**Solutions:**
-1. Ensure `SIGNATURE_SECRET` matches in both `.env` files
-2. Verify Configuration Service is running on port 3001
-3. Check that `CONFIG_SERVICE_API_KEY` matches `SERVICE_API_KEY` in Configuration Service
-4. Restart both services after changing environment variables
-
-### "Cannot connect to Configuration Service"
-
-**Cause:** Configuration Service not running
-
-**Solution:**
-```bash
-cd ../configuration-service
-node app.js
-```
-
-### Changes not persisting after reload
-
-**Cause:** Save wasn't successful or database error
-
-**Solutions:**
-1. Check Configuration Service logs for errors
-2. Verify database file exists: `configuration-service/data/configurations.db`
-3. Check file permissions on database directory
-4. Look for error messages in browser console
-
-### Port already in use
-
-**Cause:** Port 3000 or 3001 already occupied
-
-**Solutions:**
-```bash
-# Find process using port
-lsof -i :3000
-lsof -i :3001
-
-# Kill process or change PORT in .env
-```
 
 ## License
 
