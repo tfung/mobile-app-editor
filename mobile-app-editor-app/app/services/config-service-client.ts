@@ -5,9 +5,21 @@
 
 import crypto from 'crypto';
 
-const SERVICE_API_KEY = process.env.CONFIG_SERVICE_API_KEY || 'service-key-main-app-to-config-service';
-const CONFIG_SERVICE_URL = process.env.CONFIG_SERVICE_URL || 'http://localhost:3001';
-const SIGNATURE_SECRET = process.env.SIGNATURE_SECRET || 'signature-secret-change-in-production';
+// Validate and extract required environment variables
+if (!process.env.CONFIG_SERVICE_API_KEY) {
+  throw new Error('CONFIG_SERVICE_API_KEY environment variable is required');
+}
+if (!process.env.CONFIG_SERVICE_URL) {
+  throw new Error('CONFIG_SERVICE_URL environment variable is required');
+}
+if (!process.env.SIGNATURE_SECRET) {
+  throw new Error('SIGNATURE_SECRET environment variable is required');
+}
+
+// Now TypeScript knows these are defined
+const SERVICE_API_KEY: string = process.env.CONFIG_SERVICE_API_KEY;
+const CONFIG_SERVICE_URL: string = process.env.CONFIG_SERVICE_URL;
+const SIGNATURE_SECRET: string = process.env.SIGNATURE_SECRET;
 
 /**
  * Generate HMAC signature for a request

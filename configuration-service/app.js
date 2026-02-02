@@ -7,14 +7,19 @@ const configurationsRouter = require('./routes/configurations');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Validate required environment variables
+const MAIN_APP_URL = process.env.MAIN_APP_URL;
+if (!MAIN_APP_URL) {
+  throw new Error('MAIN_APP_URL environment variable is required');
+}
+
 // Middleware
 app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 
 // CORS middleware (allow requests from your React app)
 app.use((req, res, next) => {
-  const allowedOrigin = process.env.MAIN_APP_URL || 'http://localhost:3000';
-  res.header('Access-Control-Allow-Origin', allowedOrigin);
+  res.header('Access-Control-Allow-Origin', MAIN_APP_URL);
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key, X-User-Id, X-Signature, X-Timestamp');
   res.header('Access-Control-Allow-Credentials', 'true');

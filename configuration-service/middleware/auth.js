@@ -6,10 +6,18 @@
 const crypto = require('crypto');
 
 // Service API key for authentication
-const SERVICE_API_KEY = process.env.SERVICE_API_KEY || 'service-key-main-app-to-config-service';
+const SERVICE_API_KEY = process.env.SERVICE_API_KEY;
 
 // Shared secret for HMAC signature (different from API key)
-const SIGNATURE_SECRET = process.env.SIGNATURE_SECRET || 'signature-secret-change-in-production';
+const SIGNATURE_SECRET = process.env.SIGNATURE_SECRET;
+
+// Validate required environment variables
+if (!SERVICE_API_KEY) {
+  throw new Error('SERVICE_API_KEY environment variable is required');
+}
+if (!SIGNATURE_SECRET) {
+  throw new Error('SIGNATURE_SECRET environment variable is required');
+}
 
 /**
  * Generate HMAC signature for a request
