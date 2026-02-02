@@ -31,7 +31,7 @@ export interface HomeScreenConfig {
 }
 
 export interface ConfigResponse {
-  id: string;
+  id: number;
   schemaVersion: number;
   updatedAt: string;
   data: HomeScreenConfig;

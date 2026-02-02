@@ -21,7 +21,8 @@ function ConfigSelector({ allConfigs }: { allConfigs: ConfigResponse[] }) {
   if (allConfigs.length === 0) return null;
 
   const handleConfigChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedConfig = allConfigs.find(c => c.id === e.target.value);
+    const selectedId = parseInt(e.target.value, 10);
+    const selectedConfig = allConfigs.find(c => c.id === selectedId);
     if (selectedConfig) {
       setConfig(selectedConfig.data);
     }

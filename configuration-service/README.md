@@ -85,7 +85,7 @@ Configurations are stored in SQLite with the following structure:
 
 ```sql
 CREATE TABLE configurations (
-  id TEXT PRIMARY KEY,
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
   schema_version INTEGER NOT NULL,
   created_by TEXT NOT NULL,
   created_at INTEGER NOT NULL,
@@ -190,7 +190,7 @@ All configuration responses include these fields:
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `id` | string | Unique configuration identifier (UUID) |
+| `id` | number | Unique configuration identifier (auto-incrementing integer) |
 | `schemaVersion` | number | Configuration schema version |
 | `createdBy` | string | User ID who created the configuration |
 | `createdAt` | number | Creation timestamp (Unix ms) |
@@ -285,7 +285,7 @@ X-Timestamp: 1234567890123
 ```json
 [
   {
-    "id": "550e8400-e29b-41d4-a716-446655440000",
+    "id": 1,
     "schemaVersion": 1,
     "createdBy": "user-1",
     "createdAt": 1234567890000,
@@ -332,7 +332,7 @@ GET /api/configurations/:id
 ```
 
 **Path Parameters:**
-- `id` (string): Configuration UUID
+- `id` (number): Configuration ID (integer)
 
 **Headers:**
 ```
@@ -450,7 +450,7 @@ PUT /api/configurations/:id
 ```
 
 **Path Parameters:**
-- `id` (string): Configuration UUID
+- `id` (number): Configuration ID (integer)
 
 **Headers:**
 ```
@@ -505,7 +505,7 @@ DELETE /api/configurations/:id
 ```
 
 **Path Parameters:**
-- `id` (string): Configuration UUID
+- `id` (number): Configuration ID (integer)
 
 **Headers:**
 ```

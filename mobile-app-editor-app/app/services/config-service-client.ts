@@ -98,7 +98,7 @@ export async function getAllConfigsFromService(userId: string) {
 /**
  * Get a configuration by ID
  */
-export async function getConfigByIdFromService(userId: string, configId: string) {
+export async function getConfigByIdFromService(userId: string, configId: number) {
   const response = await callConfigService(userId, `/api/configurations/${configId}`);
 
   if (!response.ok) {
@@ -131,7 +131,7 @@ export async function createConfigInService(userId: string, data: unknown) {
 /**
  * Update an existing configuration
  */
-export async function updateConfigInService(userId: string, configId: string, data: unknown) {
+export async function updateConfigInService(userId: string, configId: number, data: unknown) {
   const body = JSON.stringify({ data });
 
   const response = await callConfigService(userId, `/api/configurations/${configId}`, {
@@ -148,7 +148,7 @@ export async function updateConfigInService(userId: string, configId: string, da
 /**
  * Delete a configuration
  */
-export async function deleteConfigFromService(userId: string, configId: string) {
+export async function deleteConfigFromService(userId: string, configId: number) {
   const response = await callConfigService(userId, `/api/configurations/${configId}`, {
     method: 'DELETE',
   });

@@ -1,6 +1,5 @@
 const Database = require('better-sqlite3');
 const path = require('path');
-const { randomUUID } = require('crypto');
 
 // Initialize SQLite database in data directory
 const dbPath = path.join(__dirname, 'data', 'configurations.db');
@@ -12,7 +11,7 @@ db.pragma('journal_mode = WAL');
 // Create configurations table
 db.exec(`
   CREATE TABLE IF NOT EXISTS configurations (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     schema_version INTEGER NOT NULL DEFAULT 1,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
@@ -71,18 +70,17 @@ function getConfigById(id, userId) {
  * Create a new configuration
  */
 function createConfig(userId, data) {
-  const id = randomUUID();
   const now = new Date().toISOString();
 
   const stmt = db.prepare(`
-    INSERT INTO configurations (id, schema_version, created_at, updated_at, created_by, updated_by, data)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO configurations (schema_version, created_at, updated_at, created_by, updated_by, data)
+    VALUES (?, ?, ?, ?, ?, ?)
   `);
 
-  stmt.run(id, 1, now, now, userId, userId, JSON.stringify(data));
+  const result = stmt.run(1, now, now, userId, userId, JSON.stringify(data));
 
   return {
-    id,
+    id: Number(result.lastInsertRowid),
     schemaVersion: 1,
     updatedAt: now,
     data,

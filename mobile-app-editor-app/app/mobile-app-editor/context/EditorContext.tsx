@@ -4,12 +4,12 @@ import type { HomeScreenConfig, CarouselConfig, TextSectionConfig, CTAConfig } f
 
 interface EditorContextType {
   config: HomeScreenConfig;
-  configId: string | null;
+  configId: number | null;
   updateCarousel: (carousel: Partial<CarouselConfig>) => void;
   updateTextSection: (textSection: Partial<TextSectionConfig>) => void;
   updateCTA: (cta: Partial<CTAConfig>) => void;
   setConfig: (config: HomeScreenConfig) => void;
-  setConfigId: (id: string | null) => void;
+  setConfigId: (id: number | null) => void;
 }
 
 const EditorContext = createContext<EditorContextType | undefined>(undefined);
@@ -40,12 +40,12 @@ const defaultConfig: HomeScreenConfig = {
 interface EditorProviderProps {
   children: ReactNode;
   initialConfig?: HomeScreenConfig;
-  configId?: string | null;
+  configId?: number | null;
 }
 
 export function EditorProvider({ children, initialConfig, configId: initialConfigId }: EditorProviderProps) {
   const [config, setConfigState] = useState<HomeScreenConfig>(initialConfig || defaultConfig);
-  const [configId, setConfigId] = useState<string | null>(initialConfigId || null);
+  const [configId, setConfigId] = useState<number | null>(initialConfigId || null);
 
   const updateCarousel = useCallback((carousel: Partial<CarouselConfig>) => {
     setConfigState((prev) => ({

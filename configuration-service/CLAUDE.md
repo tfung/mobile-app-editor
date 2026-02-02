@@ -115,12 +115,12 @@ function updateConfig(id, userId, data) {
 
 ```sql
 CREATE TABLE configurations (
-  id TEXT PRIMARY KEY,              -- UUID v4
-  schema_version INTEGER NOT NULL,  -- Current: 1
-  created_by TEXT NOT NULL,         -- User ID for isolation
-  created_at INTEGER NOT NULL,      -- Unix timestamp (ms)
-  updated_at INTEGER NOT NULL,      -- Unix timestamp (ms)
-  data TEXT NOT NULL                -- JSON string of HomeScreenConfig
+  id INTEGER PRIMARY KEY AUTOINCREMENT,  -- Auto-incrementing integer ID
+  schema_version INTEGER NOT NULL,       -- Current: 1
+  created_by TEXT NOT NULL,              -- User ID for isolation
+  created_at INTEGER NOT NULL,           -- Unix timestamp (ms)
+  updated_at INTEGER NOT NULL,           -- Unix timestamp (ms)
+  data TEXT NOT NULL                     -- JSON string of HomeScreenConfig
 );
 ```
 
@@ -171,7 +171,7 @@ router.post('/', requireAuth, validateConfigMiddleware, (req, res) => {
 **Rules:**
 - Validation middleware runs before handler
 - Returns 201 Created on success
-- Auto-generates UUID for `id`
+- Auto-generates integer ID (using SQLite AUTOINCREMENT)
 - Sets `schema_version` to 1
 - Sets timestamps to current time
 

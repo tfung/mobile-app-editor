@@ -33,7 +33,15 @@ router.get('/', requireAuth, (req, res) => {
  */
 router.get('/:id', requireAuth, (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid configuration ID',
+      });
+    }
+
     const config = getConfigById(id, req.userId);
 
     if (!config) {
@@ -78,7 +86,15 @@ router.post('/', requireAuth, validateConfigMiddleware, (req, res) => {
  */
 router.put('/:id', requireAuth, validateConfigMiddleware, (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid configuration ID',
+      });
+    }
+
     const { data } = req.body;
 
     const config = updateConfig(id, req.userId, data);
@@ -107,7 +123,15 @@ router.put('/:id', requireAuth, validateConfigMiddleware, (req, res) => {
  */
 router.delete('/:id', requireAuth, (req, res) => {
   try {
-    const { id } = req.params;
+    const id = parseInt(req.params.id, 10);
+
+    if (isNaN(id)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Invalid configuration ID',
+      });
+    }
+
     const deleted = deleteConfig(id, req.userId);
 
     if (!deleted) {
