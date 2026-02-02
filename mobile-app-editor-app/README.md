@@ -24,6 +24,22 @@ A full-stack web application that allows users to preview and modify a mobile ap
 - ✅ **Input Validation**: Client and server-side validation for URLs, hex colors, and required fields
 - 🔄 **Schema Versioning**: Built-in support for configuration schema evolution
 
+### Implementation Enhancements
+
+This implementation includes optional enhancements and thoughtful deviations from the original specification:
+
+1. **📜 Configuration History** (Enhancement): Each save creates a new version rather than updating in place, providing:
+   - Complete audit trail of all changes
+   - Version dropdown to load and restore previous configurations
+   - Never lose data - full rollback capability
+
+2. **🔢 Integer IDs** (Deviation): Uses auto-incrementing integers instead of UUID strings:
+   - Simpler, more readable IDs (1, 2, 3...)
+   - Better database performance
+   - Natural chronological ordering
+
+See [Notable Tradeoffs](#notable-tradeoffs-and-assumptions) for detailed rationale and architectural decisions.
+
 ## Technology Stack
 
 - **Framework**: React Router v7 with SSR
@@ -328,7 +344,28 @@ interface HomeScreenConfig {
 - ⚠️ Tradeoff: Validation logic must be kept in sync
 - **Mitigation**: Shared validation logic could be extracted to a shared package
 
-### 6. Configuration Versioning: Schema Version Field
+### 6. ID Type: Integer vs UUID
+**Choice:** Auto-incrementing integer IDs
+**Rationale:**
+- ✅ Simpler and more readable (1, 2, 3 vs UUID strings)
+- ✅ Better database performance (smaller index size)
+- ✅ Natural ordering by creation time
+- ⚠️ Deviation from spec: Original spec specified `id: string` (UUID)
+- ⚠️ Tradeoff: Not suitable for distributed systems without coordination
+- **Assumption**: Single-instance deployment, sequential IDs acceptable
+
+### 7. Configuration History: Versioning vs Update-in-Place
+**Choice:** Create new configuration on each save (versioning)
+**Rationale:**
+- ✅ Full audit trail of all changes
+- ✅ Ability to load and restore previous versions
+- ✅ Never lose configuration data
+- ✅ Simple rollback mechanism
+- ⚠️ Deviation from spec: Spec mentions "Update an existing configuration"
+- ⚠️ Tradeoff: Database grows with each save (mitigated by SQLite's small footprint)
+- **Note**: This implements the optional "support for multiple configurations" enhancement
+
+### 8. Configuration Versioning: Schema Version Field
 **Choice:** Single `schemaVersion` number
 **Rationale:**
 - ✅ Simple to implement and understand
@@ -336,7 +373,7 @@ interface HomeScreenConfig {
 - ✅ Each record tracks its own version
 - ⚠️ Assumption: Schema changes will be backward compatible or handled with migrations
 
-### 7. Real-time Updates: Optimistic UI vs Server State
+### 9. Real-time Updates: Optimistic UI vs Server State
 **Choice:** Optimistic in-memory updates, explicit save required
 **Rationale:**
 - ✅ Clear distinction between "editing" and "saved" state
