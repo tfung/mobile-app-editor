@@ -21,6 +21,24 @@ function generateSignature(method: string, path: string, body: string, timestamp
 }
 
 /**
+ * Handle API response and extract JSON or throw error
+ */
+async function handleResponse(response: Response, defaultError: string = 'Request failed') {
+  if (!response.ok) {
+    try {
+      const error = await response.json();
+      throw new Error(error.message || defaultError);
+    } catch (e) {
+      if (e instanceof Error && e.message !== defaultError) {
+        throw e;
+      }
+      throw new Error(`${defaultError}: ${response.statusText}`);
+    }
+  }
+  return response.json();
+}
+
+/**
  * Call the Configuration Service API with service authentication + signature
  */
 async function callConfigService(userId: string, path: string, options?: RequestInit) {
@@ -95,12 +113,7 @@ export async function createConfigInService(userId: string, data: unknown) {
     body,
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to create configuration');
-  }
-
-  return response.json();
+  return handleResponse(response, 'Failed to create configuration');
 }
 
 /**
@@ -117,12 +130,7 @@ export async function updateConfigInService(userId: string, configId: string, da
     body,
   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Failed to update configuration');
-  }
-
-  return response.json();
+  return handleResponse(response, 'Failed to update configuration');
 }
 
 /**

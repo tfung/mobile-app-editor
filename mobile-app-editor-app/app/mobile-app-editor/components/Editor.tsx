@@ -3,6 +3,39 @@ import { useEditor } from '../context/EditorContext';
 import { useEffect, useState, useRef } from 'react';
 import type { HomeScreenConfig } from '../types';
 
+// Reusable ColorInput component
+interface ColorInputProps {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+}
+
+function ColorInput({ label, value, onChange, placeholder }: ColorInputProps) {
+  const labelClasses = "block text-sm font-medium text-gray-700 mb-2";
+
+  return (
+    <div>
+      <label className={labelClasses}>{label}</label>
+      <div className="flex items-center gap-3">
+        <input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-11 w-16 min-w-16 border border-gray-300 rounded-lg cursor-pointer"
+        />
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono"
+          placeholder={placeholder}
+        />
+      </div>
+    </div>
+  );
+}
+
 export function Editor() {
   const { config, setConfig, updateTextSection, updateCTA, updateCarousel } = useEditor();
   const fetcher = useFetcher();
@@ -274,42 +307,18 @@ export function Editor() {
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClasses}>Title Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={config.textSection.titleColor}
-                  onChange={(e) => updateTextSection({ titleColor: e.target.value })}
-                  className="h-11 w-16 border border-gray-300 rounded-lg cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={config.textSection.titleColor}
-                  onChange={(e) => updateTextSection({ titleColor: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono"
-                  placeholder="#000000"
-                />
-              </div>
-            </div>
-            <div>
-              <label className={labelClasses}>Description Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={config.textSection.descriptionColor}
-                  onChange={(e) => updateTextSection({ descriptionColor: e.target.value })}
-                  className="h-11 w-16 border border-gray-300 rounded-lg cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={config.textSection.descriptionColor}
-                  onChange={(e) => updateTextSection({ descriptionColor: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono"
-                  placeholder="#666666"
-                />
-              </div>
-            </div>
+            <ColorInput
+              label="Title Color"
+              value={config.textSection.titleColor}
+              onChange={(val) => updateTextSection({ titleColor: val })}
+              placeholder="#000000"
+            />
+            <ColorInput
+              label="Description Color"
+              value={config.textSection.descriptionColor}
+              onChange={(val) => updateTextSection({ descriptionColor: val })}
+              placeholder="#666666"
+            />
           </div>
         </div>
       </section>
@@ -342,42 +351,18 @@ export function Editor() {
             />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className={labelClasses}>Background Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={config.cta.backgroundColor}
-                  onChange={(e) => updateCTA({ backgroundColor: e.target.value })}
-                  className="h-11 w-16 border border-gray-300 rounded-lg cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={config.cta.backgroundColor}
-                  onChange={(e) => updateCTA({ backgroundColor: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono"
-                  placeholder="#007AFF"
-                />
-              </div>
-            </div>
-            <div>
-              <label className={labelClasses}>Text Color</label>
-              <div className="flex items-center gap-3">
-                <input
-                  type="color"
-                  value={config.cta.textColor}
-                  onChange={(e) => updateCTA({ textColor: e.target.value })}
-                  className="h-11 w-16 border border-gray-300 rounded-lg cursor-pointer"
-                />
-                <input
-                  type="text"
-                  value={config.cta.textColor}
-                  onChange={(e) => updateCTA({ textColor: e.target.value })}
-                  className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm font-mono"
-                  placeholder="#FFFFFF"
-                />
-              </div>
-            </div>
+            <ColorInput
+              label="Background Color"
+              value={config.cta.backgroundColor}
+              onChange={(val) => updateCTA({ backgroundColor: val })}
+              placeholder="#007AFF"
+            />
+            <ColorInput
+              label="Text Color"
+              value={config.cta.textColor}
+              onChange={(val) => updateCTA({ textColor: val })}
+              placeholder="#FFFFFF"
+            />
           </div>
         </div>
       </section>

@@ -133,7 +133,7 @@ describe('validateConfig', () => {
 
     test('should reject invalid CTA URL', () => {
       const config = { ...validConfig, cta: { ...validConfig.cta, url: 'not a url' } };
-      expect(validateConfig(config)).toMatch(/CTA URL has invalid format/);
+      expect(validateConfig(config)).toMatch(/CTA URL has invalid URL format/);
     });
 
     test('should reject invalid CTA background color', () => {
