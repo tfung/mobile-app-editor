@@ -11,6 +11,10 @@ This application allows users to:
 - 📤 Import and export configurations as JSON files
 - 🎨 Customize colors, text, and images through an intuitive editor
 
+## Demo
+
+[Demo Video](https://drive.google.com/file/d/1-gUZXWXZZ71rJcoIRwKI5JNF7Duu3NcF/view?usp=sharing)
+
 ## Key Decisions
 
 ### 1. Database: SQLite
@@ -60,10 +64,6 @@ Each request is signed using a shared secret, and the signature includes the HTT
 - Support different configurations per environment (dev, staging, production)
 
 **Required variables are validated at startup** - the application will fail fast with clear error messages if any required environment variable is missing, preventing runtime errors from misconfiguration.
-
-## Demo
-
-[Demo Video](https://drive.google.com/file/d/1-gUZXWXZZ71rJcoIRwKI5JNF7Duu3NcF/view?usp=sharing)
 
 ## Architecture
 
