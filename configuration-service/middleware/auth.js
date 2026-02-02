@@ -40,16 +40,6 @@ function requireAuth(req, res, next) {
   const signature = req.headers['x-signature'];
   const timestamp = req.headers['x-timestamp'];
 
-  console.log('🔐 Auth Check:', {
-    method: req.method,
-    path: req.path,
-    hasApiKey: !!apiKey,
-    hasSignature: !!signature,
-    hasTimestamp: !!timestamp,
-    expectedKey: SERVICE_API_KEY,
-    receivedKey: apiKey,
-  });
-
   // 1. Check API key
   if (!apiKey) {
     return res.status(401).json({
@@ -120,18 +110,6 @@ function requireAuth(req, res, next) {
     body,
     timestamp
   );
-
-  console.log('🔏 Signature Verification:', {
-    method: req.method,
-    path: req.path,
-    baseUrl: req.baseUrl,
-    fullPath,
-    bodyLength: body.length,
-    timestamp,
-    receivedSignature: signature,
-    expectedSignature,
-    match: signature === expectedSignature,
-  });
 
   if (signature !== expectedSignature) {
     return res.status(401).json({

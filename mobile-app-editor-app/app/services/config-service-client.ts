@@ -37,16 +37,6 @@ async function callConfigService(userId: string, path: string, options?: Request
   // Generate signature
   const signature = generateSignature(method, path, body, timestamp);
 
-  console.log('📤 Sending Request:', {
-    method,
-    path,
-    bodyLength: body.length,
-    timestamp,
-    signature,
-    apiKey: SERVICE_API_KEY,
-    signatureSecret: SIGNATURE_SECRET,
-  });
-
   // Add authentication and signature headers
   const headers = new Headers(options?.headers);
   headers.set('X-API-Key', SERVICE_API_KEY);
