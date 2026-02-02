@@ -295,25 +295,15 @@ interface HomeScreenConfig {
 
 ## Notable Tradeoffs and Assumptions
 
-### 1. Storage: SQLite vs PostgreSQL
-**Choice:** SQLite with WAL mode
-**Rationale:**
-- ✅ Zero configuration for local development
-- ✅ Single-file database, easy backups
-- ✅ WAL mode provides good concurrency
-- ⚠️ Tradeoff: Not ideal for high-scale production
-- **Recommendation**: Migrate to PostgreSQL for production scale
-
-### 2. Authentication: Service Key vs OAuth
+### 1. Authentication: Service Key vs OAuth
 **Choice:** Service-to-service API key + HMAC signatures
 **Rationale:**
 - ✅ Appropriate for server-to-server communication
 - ✅ Simple to implement and test
 - ✅ HMAC signatures provide integrity and replay protection
 - ⚠️ Tradeoff: No end-user authentication built in
-- **Assumption**: User authentication is handled by the main app's session layer
 
-### 3. Validation: Client + Server
+### 2. Validation: Client + Server
 **Choice:** Duplicate validation on both sides
 **Rationale:**
 - ✅ Better UX with immediate client-side feedback
@@ -321,7 +311,7 @@ interface HomeScreenConfig {
 - ⚠️ Tradeoff: Validation logic must be kept in sync
 - **Mitigation**: Shared validation logic could be extracted to a shared package
 
-### 4. Configuration History: Versioning vs Update-in-Place
+### 3. Configuration History: Versioning vs Update-in-Place
 **Choice:** Create new configuration on each save (versioning)
 **Rationale:**
 - ✅ Full audit trail of all changes
@@ -332,7 +322,7 @@ interface HomeScreenConfig {
 - ⚠️ Tradeoff: Database grows with each save (mitigated by SQLite's small footprint)
 - **Note**: This implements the optional "support for multiple configurations" enhancement
 
-### 5. Configuration Versioning: Schema Version Field
+### 4. Configuration Versioning: Schema Version Field
 **Choice:** Single `schemaVersion` number
 **Rationale:**
 - ✅ Simple to implement and understand
@@ -340,7 +330,7 @@ interface HomeScreenConfig {
 - ✅ Each record tracks its own version
 - ⚠️ Assumption: Schema changes will be backward compatible or handled with migrations
 
-### 6. Real-time Updates: Optimistic UI vs Server State
+### 5. Real-time Updates: Optimistic UI vs Server State
 **Choice:** Optimistic in-memory updates, explicit save required
 **Rationale:**
 - ✅ Clear distinction between "editing" and "saved" state

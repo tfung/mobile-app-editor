@@ -212,15 +212,6 @@ mobile-app-editor/
     └── package.json
 ```
 
-## Development Workflow
-
-### Making Changes
-
-1. **Edit the UI**: Modify components in `mobile-app-editor-app/app/`
-2. **Add API endpoints**: Update `configuration-service/routes/`
-3. **Change validation**: Update `configuration-service/middleware/validation.js`
-4. **Modify schema**: Update TypeScript types and database schema
-
 ### Testing
 
 **Automated Tests:**
