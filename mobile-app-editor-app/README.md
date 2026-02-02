@@ -1,87 +1,489 @@
-# Welcome to React Router!
+# Mobile App Home Screen Editor
 
-A modern, production-ready template for building full-stack React applications using React Router.
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/remix-run/react-router-templates/tree/main/default)
+A full-stack web application that allows users to preview and modify a mobile app home screen in real time. Users can configure an image carousel, text section, and call-to-action button, with all configurations persisted to a backend service.
 
 ## Features
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+### Core Functionality
+- 📱 **Real-time Preview**: Live preview of mobile app home screen with phone frame mockup
+- 🎠 **Image Carousel Editor**: Add, edit, and remove images with support for portrait, landscape, and square aspect ratios
+- ✏️ **Text Customization**: Edit title and description with color pickers for custom styling
+- 🎯 **CTA Button Configuration**: Customize button label, URL, background, and text colors
+- 💾 **Persistent Storage**: Configurations saved to backend service and restored on page reload
+- 📤 **Import/Export**: Backup and restore configurations via JSON files
 
-## Getting Started
+### User Experience
+- 🎨 **Responsive Design**: Mobile-first interface that works on all screen sizes
+- ⚡ **Instant Updates**: Changes reflected immediately in the preview
+- 🖱️ **Intuitive Controls**: Color pickers, drag-free carousel navigation, and clear form inputs
+- ♿ **Accessible**: Proper ARIA labels and keyboard navigation support
+
+### Technical Features
+- 🔐 **Secure API Communication**: HMAC-SHA256 signed requests with replay attack prevention
+- 🏗️ **Server-Side Architecture**: All API calls mediated through server-side loaders/actions
+- ✅ **Input Validation**: Client and server-side validation for URLs, hex colors, and required fields
+- 🔄 **Schema Versioning**: Built-in support for configuration schema evolution
+
+## Technology Stack
+
+- **Framework**: React Router v7 with SSR
+- **Language**: TypeScript
+- **Styling**: TailwindCSS
+- **State Management**: React Context + Hooks
+- **Backend**: Express.js (separate Configuration Service)
+- **Database**: SQLite with WAL mode
+- **Authentication**: Service-to-service with HMAC signatures
+- **Build Tool**: Vite
+
+## Architecture
+
+### High-Level System Design
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Browser                              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │  React Components (Editor + Preview)               │    │
+│  │  • EditorContext (state management)                │    │
+│  │  • Real-time updates via React hooks               │    │
+│  └────────────────────────────────────────────────────┘    │
+│                          ▲                                   │
+│                          │ Form submissions                  │
+│                          │ (no credentials)                  │
+└──────────────────────────┼───────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│                  Main App Server (React Router)              │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │  Server-Side Loaders/Actions                       │    │
+│  │  • Load configurations on page load                │    │
+│  │  • Handle form submissions                         │    │
+│  │  • Mediate all Configuration Service calls        │    │
+│  │  • Attach auth headers (API key, signature)       │    │
+│  └────────────────────────────────────────────────────┘    │
+│                          ▲                                   │
+│                          │ Authenticated requests            │
+│                          │ (with HMAC signatures)            │
+└──────────────────────────┼───────────────────────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────────┐
+│            Configuration Service (Express API)               │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │  Authentication Middleware                         │    │
+│  │  • Verify API key                                  │    │
+│  │  • Validate HMAC signature                         │    │
+│  │  • Check timestamp (replay prevention)            │    │
+│  │  • Extract user ID from headers                   │    │
+│  └────────────────────────────────────────────────────┘    │
+│  ┌────────────────────────────────────────────────────┐    │
+│  │  Business Logic                                     │    │
+│  │  • CRUD operations for configurations              │    │
+│  │  • Input validation                                │    │
+│  │  • Ownership verification                          │    │
+│  └────────────────────────────────────────────────────┘    │
+│                          ▲                                   │
+│                          │ SQL queries                       │
+└──────────────────────────┼───────────────────────────────────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │    SQLite    │
+                    │   Database   │
+                    └──────────────┘
+```
+
+### Key Architectural Decisions
+
+**1. Server-Side API Mediation**
+- All Configuration Service calls go through server-side loaders/actions
+- Browser never directly accesses the Configuration Service
+- API credentials (keys, secrets) remain server-side only
+- User ID extracted from session, not trusted from client
+
+**2. HMAC Request Signing**
+- All requests signed with HMAC-SHA256
+- Signature includes method, path, body, and timestamp
+- Prevents request tampering and replay attacks
+- 5-minute timestamp window for clock skew tolerance
+
+**3. Separation of Concerns**
+- Main app handles UI, routing, and user sessions
+- Configuration Service handles data persistence and validation
+- Each service can be scaled independently
+- Clear API contract between services
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18 or higher
+- npm or yarn
 
 ### Installation
 
-Install the dependencies:
-
 ```bash
+cd mobile-app-editor-app
 npm install
 ```
 
-### Development
+### Environment Variables
 
-Start the development server with HMR:
+Create a `.env` file in the `mobile-app-editor-app` directory:
 
 ```bash
-npm run dev
+# Main App Configuration
+PORT=3000
+
+# Configuration Service
+CONFIG_SERVICE_URL=http://localhost:3001
+CONFIG_SERVICE_API_KEY=service-key-main-app-to-config-service
+
+# HMAC Signature Secret (must match Configuration Service)
+# Generate with: openssl rand -hex 32
+SIGNATURE_SECRET=signature-secret-change-in-production
+
+# Session Secret
+SESSION_SECRET=your-secret-key-change-this-in-production
 ```
 
-Your application will be available at `http://localhost:5173`.
+**Important:**
+- The `SIGNATURE_SECRET` must match between this app and the Configuration Service
+- Generate strong secrets for production: `openssl rand -hex 32`
+- Never commit secrets to version control
 
-## Building for Production
+### Running the Application
 
-Create a production build:
+1. **Start the Configuration Service first** (in a separate terminal):
+   ```bash
+   cd ../configuration-service
+   node app.js
+   ```
+
+2. **Start the main app**:
+   ```bash
+   npm run dev
+   ```
+
+3. **Access the application**:
+   - Main app: http://localhost:3000
+   - Configuration Service: http://localhost:3001 (API only)
+
+## Project Structure
+
+```
+mobile-app-editor-app/
+├── app/
+│   ├── routes/
+│   │   └── mobile-app-editor.tsx       # Main route with loader/action
+│   ├── mobile-app-editor/
+│   │   ├── components/
+│   │   │   ├── Editor.tsx              # Configuration editor UI
+│   │   │   └── Preview.tsx             # Live preview with phone frame
+│   │   ├── context/
+│   │   │   └── EditorContext.tsx       # State management
+│   │   └── types.ts                    # TypeScript interfaces
+│   ├── services/
+│   │   └── config-service-client.ts    # Configuration Service client
+│   ├── app.css                         # Global styles + utilities
+│   └── root.tsx                        # Root layout
+├── .env.example                        # Environment variables template
+└── vite.config.ts                      # Vite configuration
+```
+
+## User Flow
+
+1. **Initial Load**
+   - Server-side loader fetches latest configuration from Configuration Service
+   - EditorContext initializes with fetched data
+   - Preview and editor both render with current configuration
+
+2. **Editing**
+   - User modifies fields in the Editor component
+   - EditorContext updates state
+   - Preview component re-renders immediately (real-time updates)
+   - Changes are in-memory only until saved
+
+3. **Saving**
+   - User clicks "Save Configuration"
+   - Form submitted to server-side action
+   - Action validates and forwards to Configuration Service with auth headers
+   - Configuration Service validates and persists to database
+   - User sees success message
+   - Page reloads to show saved state
+
+4. **Import/Export**
+   - **Export**: Downloads current configuration as JSON file
+   - **Import**: Uploads JSON file, validates, and updates in-memory state
+   - Changes not persisted until user clicks "Save Configuration"
+
+## API Integration
+
+### Configuration Service Client
+
+The app uses a typed client (`config-service-client.ts`) to communicate with the Configuration Service:
+
+```typescript
+// All calls include HMAC signature generation
+await createConfigInService(userId, configData);
+await updateConfigInService(userId, configId, configData);
+await getAllConfigsFromService(userId);
+await getConfigByIdFromService(userId, configId);
+await deleteConfigFromService(userId, configId);
+```
+
+### Authentication Flow
+
+1. **Request Preparation**:
+   - Generate timestamp
+   - Construct payload: `METHOD:PATH:BODY:TIMESTAMP`
+   - Generate HMAC-SHA256 signature
+
+2. **Request Headers**:
+   ```
+   X-API-Key: service-key
+   X-User-Id: user-id-from-session
+   X-Signature: hmac-signature
+   X-Timestamp: unix-timestamp-ms
+   ```
+
+3. **Server Verification**:
+   - Validates API key
+   - Reconstructs payload and verifies signature
+   - Checks timestamp is within 5-minute window
+   - Attaches user ID to database queries
+
+## Configuration Schema
+
+```typescript
+interface HomeScreenConfig {
+  carousel: {
+    images: Array<{
+      url: string;      // Valid URL required
+      alt: string;
+    }>;
+    aspectRatio: 'portrait' | 'landscape' | 'square';
+  };
+  textSection: {
+    title: string;
+    description: string;
+    titleColor: string;        // Hex: #RRGGBB
+    descriptionColor: string;  // Hex: #RRGGBB
+  };
+  cta: {
+    label: string;
+    url: string;               // Valid URL required
+    backgroundColor: string;   // Hex: #RRGGBB
+    textColor: string;         // Hex: #RRGGBB
+  };
+}
+```
+
+## Notable Tradeoffs and Assumptions
+
+### 1. Storage: SQLite vs PostgreSQL
+**Choice:** SQLite with WAL mode
+**Rationale:**
+- ✅ Zero configuration for local development
+- ✅ Single-file database, easy backups
+- ✅ WAL mode provides good concurrency
+- ⚠️ Tradeoff: Not ideal for high-scale production
+- **Recommendation**: Migrate to PostgreSQL for production scale
+
+### 2. Authentication: Service Key vs OAuth
+**Choice:** Service-to-service API key + HMAC signatures
+**Rationale:**
+- ✅ Appropriate for server-to-server communication
+- ✅ Simple to implement and test
+- ✅ HMAC signatures provide integrity and replay protection
+- ⚠️ Tradeoff: No end-user authentication built in
+- **Assumption**: User authentication is handled by the main app's session layer
+
+### 3. Carousel: Native CSS vs Library
+**Choice:** Native CSS scroll-snap
+**Rationale:**
+- ✅ No additional dependencies
+- ✅ Better performance (hardware accelerated)
+- ✅ Touch/swipe works automatically
+- ✅ Simple implementation
+- ⚠️ Tradeoff: Less control over animation timing
+
+### 4. State Management: Context vs Redux
+**Choice:** React Context + Hooks
+**Rationale:**
+- ✅ Sufficient for single-page state management
+- ✅ No additional dependencies
+- ✅ Idiomatic React approach
+- ✅ Simple mental model
+- ⚠️ Tradeoff: Would need Redux for complex state trees
+
+### 5. Validation: Client + Server
+**Choice:** Duplicate validation on both sides
+**Rationale:**
+- ✅ Better UX with immediate client-side feedback
+- ✅ Security requires server-side validation
+- ⚠️ Tradeoff: Validation logic must be kept in sync
+- **Mitigation**: Shared validation logic could be extracted to a shared package
+
+### 6. Configuration Versioning: Schema Version Field
+**Choice:** Single `schemaVersion` number
+**Rationale:**
+- ✅ Simple to implement and understand
+- ✅ Allows for future schema evolution
+- ✅ Each record tracks its own version
+- ⚠️ Assumption: Schema changes will be backward compatible or handled with migrations
+
+### 7. Real-time Updates: Optimistic UI vs Server State
+**Choice:** Optimistic in-memory updates, explicit save required
+**Rationale:**
+- ✅ Clear distinction between "editing" and "saved" state
+- ✅ User controls when to persist changes
+- ✅ Prevents accidental overwrites
+- ⚠️ Tradeoff: No autosave (could be added as enhancement)
+
+## Production Considerations
+
+Before deploying to production:
+
+### Security
+- [ ] Generate strong secrets with `openssl rand -hex 32`
+- [ ] Use environment variable management (e.g., AWS Secrets Manager)
+- [ ] Enable HTTPS/TLS for all communication
+- [ ] Add rate limiting to prevent abuse
+- [ ] Implement proper user authentication (OAuth, JWT)
+- [ ] Add request logging and monitoring
+
+### Performance
+- [ ] Enable response compression
+- [ ] Add caching headers for static assets
+- [ ] Consider CDN for static assets
+- [ ] Add database connection pooling
+- [ ] Implement pagination for configuration lists
+- [ ] Monitor API response times
+
+### Scalability
+- [ ] Migrate from SQLite to PostgreSQL or MySQL
+- [ ] Consider Redis for session storage
+- [ ] Horizontal scaling with load balancer
+- [ ] Separate file storage for uploaded images
+- [ ] Implement proper backup strategy
+
+### Observability
+- [ ] Structured logging (e.g., Winston, Pino)
+- [ ] Error tracking (e.g., Sentry)
+- [ ] Performance monitoring (e.g., New Relic)
+- [ ] Health check endpoints
+- [ ] Metrics and dashboards
+
+## Development
+
+### Building for Production
 
 ```bash
 npm run build
 ```
 
-## Deployment
+The build outputs to `./build/`:
+- `build/client/` - Static assets for CDN
+- `build/server/` - Server-side code
+
+### Running Production Build
+
+```bash
+npm start
+```
 
 ### Docker Deployment
 
-To build and run using Docker:
-
 ```bash
-docker build -t my-app .
-
-# Run the container
-docker run -p 3000:3000 my-app
+docker build -t mobile-app-editor .
+docker run -p 3000:3000 mobile-app-editor
 ```
 
-The containerized application can be deployed to any platform that supports Docker, including:
+## Testing
 
-- AWS ECS
-- Google Cloud Run
-- Azure Container Apps
-- Digital Ocean App Platform
-- Fly.io
-- Railway
+### Manual Testing Checklist
 
-### DIY Deployment
+**Editor Functionality:**
+- [ ] Add/remove carousel images
+- [ ] Change aspect ratio (portrait/landscape/square)
+- [ ] Edit title and description text
+- [ ] Change colors using color picker
+- [ ] Change colors by typing hex values
+- [ ] Update CTA button label and URL
+- [ ] Change button colors
 
-If you're familiar with deploying Node applications, the built-in app server is production-ready.
+**Preview Functionality:**
+- [ ] Preview updates in real-time as you edit
+- [ ] Carousel navigation with arrows
+- [ ] Carousel swipe/scroll on mobile
+- [ ] Active indicator dots update on scroll
+- [ ] Colors apply correctly
+- [ ] Phone frame displays properly
 
-Make sure to deploy the output of `npm run build`
+**Persistence:**
+- [ ] Save configuration
+- [ ] Reload page - configuration persists
+- [ ] Export configuration to JSON
+- [ ] Import configuration from JSON
+- [ ] Multiple users have isolated configurations
 
+**Responsive Design:**
+- [ ] Works on mobile (< 640px)
+- [ ] Works on tablet (640px - 1024px)
+- [ ] Works on desktop (> 1024px)
+- [ ] Color pickers don't shrink too small
+
+## Troubleshooting
+
+### "Failed to fetch configurations: Unauthorized"
+
+**Cause:** HMAC signature verification failing
+
+**Solutions:**
+1. Ensure `SIGNATURE_SECRET` matches in both `.env` files
+2. Verify Configuration Service is running on port 3001
+3. Check that `CONFIG_SERVICE_API_KEY` matches `SERVICE_API_KEY` in Configuration Service
+4. Restart both services after changing environment variables
+
+### "Cannot connect to Configuration Service"
+
+**Cause:** Configuration Service not running
+
+**Solution:**
+```bash
+cd ../configuration-service
+node app.js
 ```
-├── package.json
-├── package-lock.json (or pnpm-lock.yaml, or bun.lockb)
-├── build/
-│   ├── client/    # Static assets
-│   └── server/    # Server-side code
+
+### Changes not persisting after reload
+
+**Cause:** Save wasn't successful or database error
+
+**Solutions:**
+1. Check Configuration Service logs for errors
+2. Verify database file exists: `configuration-service/data/configurations.db`
+3. Check file permissions on database directory
+4. Look for error messages in browser console
+
+### Port already in use
+
+**Cause:** Port 3000 or 3001 already occupied
+
+**Solutions:**
+```bash
+# Find process using port
+lsof -i :3000
+lsof -i :3001
+
+# Kill process or change PORT in .env
 ```
 
-## Styling
+## License
 
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
+MIT
 
 ---
 
-Built with ❤️ using React Router.
+Built with ❤️ using React Router and Express.js
