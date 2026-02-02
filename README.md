@@ -11,6 +11,22 @@ This application allows users to:
 - 📤 Import and export configurations as JSON files
 - 🎨 Customize colors, text, and images through an intuitive editor
 
+## Decisions
+
+1. Database
+    1. **Reasoning**: SQLite was chosen as the database due to the minimal setup required for this demo project. SQLite is lightweight, simple to use, while also offers features very similar to a full RDMS database.
+    2. **For Production**: For production, we will realistically use MySQL as it will be more fully featured and can be sharded to be able to scale.
+2. REST: 
+    1. **Reasoning**: Given the simple structure of this application, REST is sufficient for this system. REST is easy and quick to set up in any language and framework.
+    2. **Tradeoffs**: If scaled in a production application, overfetching or underfetching could cause additional latency and performance issues.
+    2. **For Production**: If we're fetching data across different clients, and we're at a scale that REST is insufficient, GraphQL is a great option. It allows the client to declare what to fetch, and the GraphQL layer can be strictly typed via a GraphQL schema thus reducing mistakes.
+3. Hmac Authentication:
+    1. **Reasoning**: Prevents potential tampering with request payloads by checking the signature of the request before processing.
+4. API Key:
+    1. **Reasoning**: API keys are used to identify the calling application. Each application will have it's own associated secret.
+5. ENV Files:
+    1. Environment variables are defined in the .env file so that we can conveniently rotate secrets while being able to find all critical application declarations all in one place.
+
 ## Demo
 
 [Demo Video](https://drive.google.com/file/d/1-gUZXWXZZ71rJcoIRwKI5JNF7Duu3NcF/view?usp=sharing)
@@ -243,30 +259,126 @@ See [TESTING.md](TESTING.md) for detailed testing guide.
 - Use cURL commands from [Configuration Service README](configuration-service/README.md)
 - Check Configuration Service logs for authentication issues
 
-## Key Architectural Decisions
+## Notable Tradeoffs and Assumptions
 
-### 1. Service Separation
-- **Main app** handles UI, routing, and user sessions
-- **Configuration service** handles data persistence
-- Allows independent scaling and deployment
+### 1. Service Separation: Monolith vs Microservices
+**Choice:** Two separate services (Main App + Configuration Service)
 
-### 2. Server-Side Mediation
-- Browser never directly calls Configuration Service
-- All API credentials stay server-side
-- Prevents credential exposure
+**Rationale:**
+- ✅ Clear separation of concerns (UI vs data persistence)
+- ✅ Independent scaling and deployment
+- ✅ Easier to test in isolation
+- ✅ Different services can use different technologies
+- ⚠️ Tradeoff: Added complexity with service-to-service communication
+- ⚠️ Tradeoff: Network latency between services
+- **Production consideration:** Both services could be deployed separately or combined if simplicity is preferred
 
-### 3. HMAC Request Signing
-- All requests signed with HMAC-SHA256
-- Prevents tampering and replay attacks
-- 5-minute timestamp window for validation
+### 2. Storage: SQLite vs PostgreSQL
+**Choice:** SQLite with WAL mode
 
-### 4. SQLite for Development
-- Zero configuration setup
-- Single-file database
-- Easy backups
-- **Production:** Migrate to PostgreSQL
+**Rationale:**
+- ✅ Zero configuration setup - works out of the box
+- ✅ Single-file database - easy backups and portability
+- ✅ Sufficient for single-server deployments
+- ✅ WAL mode provides good concurrent read performance
+- ⚠️ Tradeoff: Limited horizontal scaling (no built-in replication)
+- ⚠️ Tradeoff: Not suitable for high-concurrency write workloads
+- **Production recommendation:** Migrate to PostgreSQL or MySQL for production deployments requiring:
+  - Multiple application servers
+  - High availability and replication
+  - Advanced query optimization
 
-For detailed rationale, see [Main App README - Notable Tradeoffs](mobile-app-editor-app/README.md#notable-tradeoffs-and-assumptions).
+### 3. Authentication: Service Key vs OAuth
+**Choice:** Service-to-service API key with HMAC-SHA256 signatures
+
+**Rationale:**
+- ✅ Appropriate for server-to-server communication
+- ✅ Simple to implement and test
+- ✅ HMAC signatures provide request integrity and replay protection
+- ✅ Timestamp validation prevents replay attacks (5-minute window)
+- ⚠️ Tradeoff: No end-user OAuth/SSO integration
+- **Assumption:** Main app handles user authentication separately
+
+### 4. Server-Side Mediation: Direct Client Calls vs Server Proxy
+**Choice:** All Configuration Service API calls go through server-side loaders/actions
+
+**Rationale:**
+- ✅ Browser never sees API credentials
+- ✅ Credentials remain server-side only
+- ✅ User ID extracted from trusted server session, not client
+- ✅ Additional layer of validation and error handling
+- ⚠️ Tradeoff: Adds network hop (client → main app → config service)
+- ⚠️ Tradeoff: Cannot use configuration API from other client apps directly
+
+### 5. Configuration History: Versioning vs Update-in-Place
+**Choice:** Create new configuration on each save (versioning)
+
+**Rationale:**
+- ✅ Full audit trail of all changes
+- ✅ Ability to load and restore previous versions
+- ✅ Never lose configuration data
+- ✅ Simple rollback mechanism
+- ⚠️ Deviation from spec: Spec mentions "Update an existing configuration"
+- ⚠️ Tradeoff: Database grows with each save
+- **Note:** This implements the optional "support for multiple configurations" enhancement
+- **Mitigation:** SQLite has small footprint; periodic cleanup could be added
+
+### 6. Validation: Client-Only vs Client + Server
+**Choice:** Duplicate validation on both sides
+
+**Rationale:**
+- ✅ Better UX with immediate client-side feedback
+- ✅ Security requires server-side validation (never trust client)
+- ✅ Prevents invalid data from reaching the database
+- ⚠️ Tradeoff: Validation logic must be kept in sync
+- **Future improvement:** Extract shared validation to npm package
+
+### 7. Real-time Updates: Autosave vs Explicit Save
+**Choice:** Optimistic in-memory updates, explicit save required
+
+**Rationale:**
+- ✅ Clear distinction between "editing" and "saved" state
+- ✅ User controls when to persist changes
+- ✅ Prevents accidental overwrites from concurrent edits
+- ✅ Allows experimenting without committing changes
+- ⚠️ Tradeoff: No autosave - changes lost if browser crashes
+- **Optional enhancement:** Autosave to localStorage could be added
+
+### 8. Schema Versioning: Version Field vs Migration System
+**Choice:** Single `schemaVersion` number in each record
+
+**Rationale:**
+- ✅ Simple to implement and understand
+- ✅ Allows for future schema evolution
+- ✅ Each record tracks its own version
+- ✅ Can handle multiple schema versions simultaneously
+- ⚠️ Assumption: Schema changes will be backward compatible or handled with application-level migrations
+
+### 9. API Protocol: REST vs GraphQL
+**Choice:** REST API
+
+**Rationale:**
+- ✅ Simpler to implement and debug
+- ✅ Well-understood by most developers
+- ✅ Good fit for CRUD operations
+- ✅ HTTP status codes provide clear semantics
+- ⚠️ Tradeoff: GraphQL would allow more flexible querying
+- **Assumption:** Simple CRUD operations are sufficient for this use case
+
+### 10. Frontend Framework: React Router vs Next.js
+**Choice:** React Router v7 with SSR
+
+**Rationale:**
+- ✅ Specification preferred Remix or React Router
+- ✅ Excellent server-side rendering support
+- ✅ Simpler architecture than Next.js for this use case
+- ✅ Loaders/actions pattern fits requirements perfectly
+- ⚠️ Tradeoff: Smaller ecosystem than Next.js
+- **Note:** Next.js would work equally well and was listed as acceptable
+
+For detailed implementation specifics and code-level tradeoffs, see:
+- [Main App README - Notable Tradeoffs](mobile-app-editor-app/README.md#notable-tradeoffs-and-assumptions)
+- [Configuration Service README](configuration-service/README.md)
 
 ## License
 
