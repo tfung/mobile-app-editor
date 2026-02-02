@@ -6,3 +6,6 @@
 /.react-router/
 /build/
 /data/
+
+# Test coverage
+coverage/
