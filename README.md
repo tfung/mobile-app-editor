@@ -11,21 +11,55 @@ This application allows users to:
 - 📤 Import and export configurations as JSON files
 - 🎨 Customize colors, text, and images through an intuitive editor
 
-## Decisions
+## Key Decisions
 
-1. Database
-    1. **Reasoning**: SQLite was chosen as the database due to the minimal setup required for this demo project. SQLite is lightweight, simple to use, while also offers features very similar to a full RDMS database.
-    2. **For Production**: For production, we will realistically use MySQL as it will be more fully featured and can be sharded to be able to scale.
-2. REST: 
-    1. **Reasoning**: Given the simple structure of this application, REST is sufficient for this system. REST is easy and quick to set up in any language and framework.
-    2. **Tradeoffs**: If scaled in a production application, overfetching or underfetching could cause additional latency and performance issues.
-    2. **For Production**: If we're fetching data across different clients, and we're at a scale that REST is insufficient, GraphQL is a great option. It allows the client to declare what to fetch, and the GraphQL layer can be strictly typed via a GraphQL schema thus reducing mistakes.
-3. Hmac Authentication:
-    1. **Reasoning**: Prevents potential tampering with request payloads by checking the signature of the request before processing.
-4. API Key:
-    1. **Reasoning**: API keys are used to identify the calling application. Each application will have it's own associated secret.
-5. ENV Files:
-    1. Environment variables are defined in the .env file so that we can conveniently rotate secrets while being able to find all critical application declarations all in one place.
+### 1. Database: SQLite
+**Reasoning**: SQLite was chosen as the database due to the minimal setup required for this demo project. SQLite is lightweight, simple to use, and offers features very similar to a full RDBMS database. It provides ACID compliance, supports concurrent reads via WAL mode, and requires zero configuration.
+
+**For Production**: For production deployments requiring high availability and horizontal scaling, migrating to PostgreSQL or MySQL is recommended. These databases offer:
+- Built-in replication and clustering
+- Better performance for high-concurrency workloads
+- Advanced query optimization and indexing capabilities
+- Horizontal scaling through sharding
+
+### 2. API Protocol: REST
+**Reasoning**: Given the straightforward CRUD operations required by this application, REST is sufficient and appropriate. REST is:
+- Quick to implement in any language and framework
+- Easy to debug with standard HTTP tools
+- Well-understood by developers
+- Provides clear semantics through HTTP methods and status codes
+
+**Tradeoffs**: In a scaled production application, REST can lead to overfetching or underfetching, potentially causing additional latency and bandwidth usage.
+
+**For Production**: If the system scales to serve multiple client types with varying data requirements, GraphQL becomes a compelling option. GraphQL allows:
+- Clients to declare exactly what data they need
+- Single endpoint for all queries
+- Strongly-typed schema preventing API contract mistakes
+- Reduced network overhead from overfetching
+
+### 3. HMAC Authentication
+**Reasoning**: HMAC-SHA256 signatures provide cryptographic verification of request integrity. This prevents:
+- Tampering with request payloads in transit
+- Replay attacks (via timestamp validation)
+- Unauthorized modification of requests
+
+Each request is signed using a shared secret, and the signature includes the HTTP method, path, body, and timestamp. The Configuration Service validates the signature before processing any request.
+
+### 4. API Key Authentication
+**Reasoning**: API keys identify the calling application in a service-to-service architecture. Each service (Main App, potential future services) has its own associated API key and signature secret. This allows:
+- Service-level access control
+- Audit trails showing which service made requests
+- Independent secret rotation per service
+- Ability to revoke access for specific services
+
+### 5. Environment Variables
+**Reasoning**: All secrets and configuration values are defined in `.env` files to:
+- Keep sensitive data out of source control
+- Enable convenient secret rotation without code changes
+- Centralize all critical application configuration in one discoverable location
+- Support different configurations per environment (dev, staging, production)
+
+**Required variables are validated at startup** - the application will fail fast with clear error messages if any required environment variable is missing, preventing runtime errors from misconfiguration.
 
 ## Demo
 
