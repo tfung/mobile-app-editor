@@ -11,6 +11,10 @@ This application allows users to:
 - 📤 Import and export configurations as JSON files
 - 🎨 Customize colors, text, and images through an intuitive editor
 
+## Demo
+
+[Demo Video](https://drive.google.com/file/d/1-gUZXWXZZ71rJcoIRwKI5JNF7Duu3NcF/view?usp=sharing)
+
 ## Architecture
 
 The project consists of two separate services:
